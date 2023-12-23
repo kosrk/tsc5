@@ -22,8 +22,8 @@
 		;; return ();
 	;; }
 
-  int op = in_msg.preload_uint(32); ;; maybe use preload
-  in_msg~skip_bits(32 + 64); ;; skip op and reading query_id
+  int op = in_msg~load_uint(32); ;; maybe use preload
+  int query_id = in_msg~load_uint(64);
 
   if (op == 0x9df10277) {
     
