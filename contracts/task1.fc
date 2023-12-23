@@ -1,48 +1,77 @@
 #include "imports/stdlib.fc";
 
-;; storage
-;; public_key: uint256
-;; seqno: uint32
-;; execution_time: uint32
-;; receiver: MsgAddressInt
+;; Storage:
+;; storage$_ public_key:uint256 execution_time:uint32 receiver:MsgAddressInt seqno:uint32 = Storage;
+
+;; External in: 
+;; update#9df10277 query_id:uint64 signature:bits512 ^[ locked_for:uint32 new_seqno:uint32 ] = ExtInMsgBody
+
+;; External in:
+;; claim#bb4be234 query_id:uint64 = ExtInMsgBody
+
+int op::update() asm "0x9df10277 PUSHINT";
+int op::claim() asm "0xbb4be234 PUSHINT";
 
 () recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
-
+  ;; do nothing for internal messages
 }
 
 
 () recv_external(slice in_msg) impure {
-  var signature = in_msg~load_bits(512);
-  var cs = in_msg.load_ref().begin_parse();
-  ;; var (subwallet_id, valid_until, msg_seqno) = (cs~load_uint(32), cs~load_uint(32), cs~load_uint(32));
-  ;; throw_if(35, valid_until <= now());
-  ;; var ds = get_data().begin_parse();
-  ;; var (stored_seqno, stored_subwallet, public_key) = (ds~load_uint(32), ds~load_uint(32), ds~load_uint(256));
-  ;; ds.end_parse();
-  throw_unless(119, msg_seqno == stored_seqno);
-  ;; throw_unless(34, subwallet_id == stored_subwallet);
-  ;; throw_unless(35, check_signature(slice_hash(in_msg), signature, public_key));
-  ;; accept_message();
-  ;; cs~touch();
-  ;; while (cs.slice_refs()) {
-  ;;   var mode = cs~load_uint(8);
-  ;;   send_raw_message(cs~load_ref(), mode);
-  ;; }
-  ;; set_data(begin_cell()
-  ;;   .store_uint(stored_seqno + 1, 32)
-  ;;   .store_uint(stored_subwallet, 32)
-  ;;   .store_uint(public_key, 256)
-  ;;   .end_cell());
+
+  ;; if (in_msg.slice_empty?()) { ;; ignore empty messages
+		;; return ();
+	;; }
+
+  int op = in_msg~load_uint(32); ;; maybe use preload 
+  int query_id = in_msg~load_uint(64);
+
+  if (op == op::update()) {
+    
+    var signature = in_msg~load_bits(512);
+    var c = in_msg~load_ref();
+    var cs = c.begin_parse();
+    var (locked_for, new_seqno) = (cs~load_uint(32), cs~load_uint(32));
+    
+    var ds = get_data().begin_parse();
+    var (public_key, execution_time) = (ds~load_uint(256), ds~load_uint(32));
+    ds~skip_bits(11);
+    var receiver = ds~load_uint(256);
+    var stored_seqno = ds~load_uint(32);
+
+    throw_unless(119, new_seqno != stored_seqno + 1);
+    throw_unless(120, check_signature(cell_hash(c), signature, public_key));
+    throw_unless(121, locked_for <= 0);
+    throw_unless(122, execution_time < now());
+    throw_unless(123, now() + locked_for < execution_time);
+
+    set_data(begin_cell()
+    .store_uint(public_key, 256)
+    .store_uint(locked_for, 32)
+    .store_uint(0, 11)
+    .store_uint(receiver, 256)
+    .store_uint(new_seqno, 32)
+    .end_cell());
+
+    return();
+  }
+
+  if (op == op::claim()) {
+    return();
+  }
+
 }
 
 ;; Get methods
 
 int get_seqno() method_id {
-  return get_data().begin_parse().preload_uint(32);
+  var cs = get_data().begin_parse();
+  cs~skip_bits(256 + 32 + 256 + 8 + 3);
+  return cs.preload_uint(32);
 }
 
 int get_execution_time() method_id {
   var cs = get_data().begin_parse();
-  cs~load_uint(64);
-  return cs.preload_uint(256);
+  cs~skip_bits(256);
+  return cs.preload_uint(32);
 }
