@@ -1,5 +1,60 @@
 #include "imports/stdlib.fc";
 
+;; add_user#368ddef3 query_id:uint64 address:MsgAddressInt share:uint32 = InternalMsgBody;
+;; remove_user#278205c8 query_id:uint64 address:MsgAddressInt = InternalMsgBody;
+;; split_ton#068530b3 query_id:uint64 amount:Coins = InternalMsgBody;
+;; transfer_notification#701c09a6 query_id:uint64 amount:Coins = InternalMsgBody;
+
+;; storage
+;; admin_address: MsgAddressInt
+;; users: (HashmapE 267 uint32)
+
+;; TODO: move to receiver
+int parse_sender_address (cell in_msg_full) inline {
+    var cs = in_msg_full.begin_parse();
+    cs~load_uint(4 + 11); ;; flags + addr std op + wc
+    return cs.preload_uint(256); ;; sender address
+}
+
+(int, cell) load_data() inline {
+    var ds = get_data().begin_parse();
+    ds~load_uint(11);
+    ;; cell dic = ds.slice_bits() == 0 ? new_dict() : data; ;; check for empty dict
+    return (ds~load_uint(256), ds~load_dict()); ;; owner addr and map
+}
+
+() save_data(int owner, cell dict) inline {
+    set_data(begin_cell().store_uint(1024,11).store_uint(owner, 256).store_dict(dict).end_cell());
+}
+
 () recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
 
+    if (in_msg_body.slice_bits() < 32) { ;; ignore short messages
+        return ();
+    }
+
+    int op = in_msg_body~load_uint(32);
+
+    if (op == 0x368ddef3) { ;; add user
+        int sender_address = parse_sender_address(in_msg_full);
+        var (owner, dict) = load_data();
+        throw_unless(120, sender_address == owner);
+        var (_, user, share) = (in_msg_body~load_uint(64), in_msg_body~load_bits(267), in_msg_body~load_uint(32));
+        dict~dict_set_builder(267, user, begin_cell().store_uint(32, share));
+        save_data(owner, dict);
+        return();
+    }
+
+    if (op == 0x278205c8) { ;; remove user
+        int sender_address = parse_sender_address(in_msg_full);
+        return();
+    }
+
+    if (op == 0x068530b3) { ;; split ton
+        return();
+    }
+
+    if (op == 0x701c09a6) { ;; transfer notification
+        return();
+    }
 }
