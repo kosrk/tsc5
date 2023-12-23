@@ -17,7 +17,7 @@ int op::claim() asm "0xbb4be234 PUSHINT";
 }
 
 () recv_external(slice in_msg) impure {
-
+;;   accept_message(); ;; comment after tests
   ;; if (in_msg.slice_empty?()) { ;; ignore empty messages
 		;; return ();
 	;; }
@@ -38,11 +38,11 @@ int op::claim() asm "0xbb4be234 PUSHINT";
     var receiver = ds~load_uint(256);
     var stored_seqno = ds~load_uint(32);
 
-    throw_unless(119, new_seqno != stored_seqno + 1);
+    throw_if(119, new_seqno != stored_seqno + 1);
     throw_unless(120, check_signature(cell_hash(c), signature, public_key));
-    throw_unless(121, locked_for <= 0);
-    throw_unless(122, execution_time < now());
-    throw_unless(123, now() + locked_for < execution_time);
+    throw_if(121, locked_for <= 0);
+    throw_if(122, execution_time < now());
+    throw_if(123, now() + locked_for < execution_time);
     accept_message();
 
     set_data(begin_cell()
@@ -62,11 +62,12 @@ int op::claim() asm "0xbb4be234 PUSHINT";
     ds~skip_bits(11);
     var receiver = ds~load_uint(256);
 
-    throw_unless(124, execution_time > now());
+    throw_if(124, execution_time > now());
     accept_message();
 
     send_raw_message(begin_cell()
             .store_uint(0x10, 6) ;; nobounce - int_msg_info$0 ihr_disabled:Bool bounce:Bool bounced:Bool src:MsgAddress -> 010000
+            .store_uint(1024, 11) ;; std addr 0 workchain
             .store_uint(receiver, 256)
             .store_coins(0)
             .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1)
