@@ -9,8 +9,8 @@
 ;; External in:
 ;; claim#bb4be234 query_id:uint64 = ExtInMsgBody
 
-int op::update() asm "0x9df10277 PUSHINT";
-int op::claim() asm "0xbb4be234 PUSHINT";
+;; int op::update() asm "0x9df10277 PUSHINT";
+;; int op::claim() asm "0xbb4be234 PUSHINT";
 
 () recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
   ;; do nothing for internal messages
@@ -22,10 +22,10 @@ int op::claim() asm "0xbb4be234 PUSHINT";
 		;; return ();
 	;; }
 
-  int op = in_msg~load_uint(32); ;; maybe use preload 
-  int query_id = in_msg~load_uint(64);
+  int op = in_msg.preload_int(32); ;; maybe use preload
+  in_msg~skip_bits(32 + 64); ;; skip op and reading query_id
 
-  if (op == op::update()) {
+  if (op == 0x9df10277) {
     
     var signature = in_msg~load_bits(512);
     var c = in_msg~load_ref();
@@ -56,7 +56,7 @@ int op::claim() asm "0xbb4be234 PUSHINT";
     return();
   }
 
-  if (op == op::claim()) {
+  if (op == 0xbb4be234) {
     var ds = get_data().begin_parse();
     var (public_key, execution_time) = (ds~load_uint(256), ds~load_uint(32));
     ds~skip_bits(11);
