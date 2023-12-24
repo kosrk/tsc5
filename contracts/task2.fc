@@ -10,6 +10,8 @@
 ;; users: (HashmapE 256 uint32)
 ;; total_share optional
 
+(cell, (slice, int)) ~udict_set_get_builder?(cell dict, int key_len, int index, builder value) asm(value index dict key_len) "DICTUSETGETB NULLSWAPIFNOT";
+
 ;; TODO: move to receiver
 int parse_sender_address (cell in_msg_full) inline {
     var cs = in_msg_full.begin_parse();
@@ -17,15 +19,27 @@ int parse_sender_address (cell in_msg_full) inline {
     return cs.preload_uint(256); ;; sender address
 }
 
-(int, cell) load_data() inline {
+(int, cell, int) load_data() inline {
     var ds = get_data().begin_parse();
     ds~load_uint(11);
     ;; cell dic = ds.slice_bits() == 0 ? new_dict() : data; ;; check for empty dict
-    return (ds~load_uint(256), ds~load_dict()); ;; owner addr and map
+    int total_share = 0;
+    var (addr, dict) = (ds~load_uint(256), ds~load_dict());
+    if ds.slice_bits() >= 64 {
+        total_share = ds~load_uint(64);
+    }
+    return (addr, dict, total_share); ;; owner addr and map
 }
 
-() save_data(int owner, cell dict) impure inline {
-    set_data(begin_cell().store_uint(1024,11).store_uint(owner, 256).store_dict(dict).end_cell());
+() save_data(int owner, cell dict, int total_share) impure inline {
+    set_data(
+            begin_cell()
+                    .store_uint(1024,11)
+                    .store_uint(owner, 256)
+                    .store_dict(dict)
+                    .store_uint(total_share, 64)
+                    .end_cell()
+    );
 }
 
 () recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
@@ -38,34 +52,39 @@ int parse_sender_address (cell in_msg_full) inline {
 
     if (op == 0x368ddef3) { ;; add user
         int sender_address = parse_sender_address(in_msg_full);
-        var (owner, dict) = load_data(); ;; TODO: load owner first and dict after check
+        var (owner, dict, total_share) = load_data(); ;; TODO: load owner first and dict after check
         throw_unless(120, sender_address == owner);
         in_msg_body~skip_bits(64 + 11); ;; query_id and addr prefix
         var (user, share) = (in_msg_body~load_uint(256), in_msg_body~load_uint(32));
-        dict~udict_set_builder(256, user, begin_cell().store_uint(share, 32));
-        save_data(owner, dict);
+        total_share += share;
+        var (old_share, res) = dict~udict_set_get_builder?(256, user, begin_cell().store_uint(share, 32));
+        if res {
+            total_share -= old_share~load_uint(32);
+        }
+        save_data(owner, dict, total_share);
         return();
     }
 
     if (op == 0x278205c8) { ;; remove user
         int sender_address = parse_sender_address(in_msg_full);
-        var (owner, dict) = load_data(); ;; TODO: load owner first and dict after check
+        var (owner, dict, total_share) = load_data(); ;; TODO: load owner first and dict after check
         throw_unless(120, sender_address == owner);
         var (_, user) = (in_msg_body~load_uint(64 + 11), in_msg_body~load_uint(256));
-        var (_ , res) = dict~udict_delete_get?(256, user);
+        var (old_share , res) = dict~udict_delete_get?(256, user);
         throw_unless(121, res);
-        save_data(owner, dict);
+        total_share -= old_share~load_uint(32);
+        save_data(owner, dict, total_share);
         return();
     }
 
     if (op == 0x068530b3) { ;; split ton
-        var (_, dict) = load_data(); ;; TODO: load owner first and dict after check
+        var (_, dict, _) = load_data(); ;; TODO: load owner first and dict after check
         throw_if(122, dict.dict_empty?());
         return();
     }
 
     if (op == 0x701c09a6) { ;; transfer notification
-        var (_, dict) = load_data(); ;; TODO: load owner first and dict after check
+        var (_, dict, _) = load_data(); ;; TODO: load owner first and dict after check
         throw_if(122, dict.dict_empty?());
         return();
     }
