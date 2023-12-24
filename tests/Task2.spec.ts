@@ -1,8 +1,9 @@
-import { Blockchain, SandboxContract } from '@ton-community/sandbox';
-import { Cell, toNano } from 'ton-core';
+import {Blockchain, SandboxContract, TreasuryContract} from '@ton-community/sandbox';
+import {Address, beginCell, Cell, Dictionary, toNano} from 'ton-core';
 import { Task2 } from '../wrappers/Task2';
 import '@ton-community/test-utils';
 import { compile } from '@ton-community/blueprint';
+import {DictionaryKey, DictionaryValue} from "ton-core/src/dict/Dictionary";
 
 describe('Task2', () => {
     let code: Cell;
@@ -13,13 +14,17 @@ describe('Task2', () => {
 
     let blockchain: Blockchain;
     let task2: SandboxContract<Task2>;
+    let deployer: SandboxContract<TreasuryContract>;
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
+        deployer = await blockchain.treasury('deployer');
 
-        task2 = blockchain.openContract(Task2.createFromConfig({}, code));
+        task2 = blockchain.openContract(Task2.createFromConfig({
+            owner: deployer.address,
+            dict: Dictionary.empty<Address, number>(),
+        }, code));
 
-        const deployer = await blockchain.treasury('deployer');
 
         const deployResult = await task2.sendDeploy(deployer.getSender(), toNano('0.05'));
 
@@ -35,4 +40,56 @@ describe('Task2', () => {
         // the check is done inside beforeEach
         // blockchain and task2 are ready to use
     });
+
+    it("all tests", async () => {
+
+        // ADD USER
+        const result = await task2.sendAddUser(
+            deployer.getSender(),
+            toNano('0.01'),
+            deployer.address,
+            100
+        );
+        expect(result.transactions).toHaveTransaction({
+            success: true,
+            exitCode: 0,
+            op: 0x368ddef3,
+        })
+
+        // ADD ANOTHER USER
+        const result12 = await task2.sendAddUser(
+            deployer.getSender(),
+            toNano('0.01'),
+            task2.address,
+            1000
+        );
+
+        // GET DICT
+        const value = await task2.getUsers();
+        let d = value.out.beginParse().loadDict(Dictionary.Keys.Address(), Dictionary.Values.Uint(32))
+        expect(d.get(deployer.address)).toEqual(100);
+        console.log("Get users gas used:", value.gasUsed)
+
+        // GET SHARE
+        const value2 = await task2.getUserShare(deployer.address);
+        expect(value2.out).toEqual(100);
+        console.log("Get user share gas used:", value2.gasUsed)
+
+        // REMOVE USER
+        const result2 = await task2.sendRemoveUser(
+            deployer.getSender(),
+            toNano('0.01'),
+            deployer.address
+        );
+        expect(result2.transactions).toHaveTransaction({
+            success: true,
+            exitCode: 0,
+            op: 0x278205c8,
+        })
+        const value3 = await task2.getUsers();
+        let d2 = value3.out.beginParse().loadDict(Dictionary.Keys.Address(), Dictionary.Values.Uint(32))
+        expect(d2.size).toEqual(1);
+
+    });
+
 });
