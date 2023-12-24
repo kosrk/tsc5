@@ -43,7 +43,7 @@ int parse_sender_address (cell in_msg_full) inline {
         var (owner, dict) = load_data(); ;; TODO: load owner first and dict after check
         throw_unless(120, sender_address == owner);
         var (_, user, share) = (in_msg_body~load_uint(64), in_msg_body~load_bits(267), in_msg_body~load_uint(32));
-        dict~dict_set_builder(267, user, begin_cell().store_uint(32, share));
+        dict~dict_set_builder(267, user, begin_cell().store_uint(share, 32));
         save_data(owner, dict);
         return();
     }
@@ -73,7 +73,7 @@ int parse_sender_address (cell in_msg_full) inline {
 cell get_users() method_id {
     var cs = get_data().begin_parse();
     cs~skip_bits(267);
-    return cs.preload_dict();
+    return begin_cell().store_dict(cs.preload_dict()).end_cell(); ;; TODO: optimize
 }
 
 int get_user_share(slice user_address) method_id {
