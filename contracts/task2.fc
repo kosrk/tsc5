@@ -1,10 +1,5 @@
 #include "imports/stdlib.fc";
 
-;; add_user#368ddef3 query_id:uint64 address:MsgAddressInt share:uint32 = InternalMsgBody;
-;; remove_user#278205c8 query_id:uint64 address:MsgAddressInt = InternalMsgBody;
-;; split_ton#068530b3 query_id:uint64 amount:Coins = InternalMsgBody;
-;; transfer_notification#701c09a6 query_id:uint64 amount:Coins = InternalMsgBody;
-
 ;; storage
 ;; admin_address: MsgAddressInt
 ;; users: (HashmapE 256 uint32)
@@ -51,6 +46,7 @@ int parse_sender_address (cell in_msg_full) inline {
 
     int op = in_msg_body~load_uint(32);
 
+    ;; add_user#368ddef3 query_id:uint64 address:MsgAddressInt share:uint32 = InternalMsgBody;
     if (op == 0x368ddef3) { ;; add user
         int sender_address = parse_sender_address(in_msg_full);
         var (owner, dict, total_share) = load_data(); ;; TODO: load owner first and dict after check
@@ -66,6 +62,7 @@ int parse_sender_address (cell in_msg_full) inline {
         return();
     }
 
+    ;; remove_user#278205c8 query_id:uint64 address:MsgAddressInt = InternalMsgBody;
     if (op == 0x278205c8) { ;; remove user
         int sender_address = parse_sender_address(in_msg_full);
         var (owner, dict, total_share) = load_data(); ;; TODO: load owner first and dict after check
@@ -78,6 +75,7 @@ int parse_sender_address (cell in_msg_full) inline {
         return();
     }
 
+    ;; split_ton#068530b3 query_id:uint64 amount:Coins = InternalMsgBody;
     if (op == 0x068530b3) { ;; split ton
         var (_, dict, total_share) = load_data(); ;; TODO: load owner first and dict after check
         throw_if(122, dict.dict_empty?());
@@ -97,9 +95,39 @@ int parse_sender_address (cell in_msg_full) inline {
         return();
     }
 
+    ;; transfer_notification#701c09a6 query_id:uint64 amount:Coins = InternalMsgBody;
     if (op == 0x701c09a6) { ;; transfer notification
-        var (_, dict, _) = load_data(); ;; TODO: load owner first and dict after check
+        var (_, dict, total_share) = load_data(); ;; TODO: load owner first and dict after check
         throw_if(122, dict.dict_empty?());
+        in_msg_body~skip_bits(64); ;; query_id
+        int amount = in_msg_body~load_coins(); ;; TODO: maybe optimize
+        int sender_address = parse_sender_address(in_msg_full);
+
+        (int user, slice cs, int f) = dict.udict_get_next?(256, -1);
+        do { ;; TODO: try replace with repeat
+            int part = cs~load_uint(32) * amount / total_share;
+            send_raw_message(begin_cell()
+                    .store_uint(0x10, 6) ;; nobounce - int_msg_info$0 ihr_disabled:Bool bounce:Bool bounced:Bool src:MsgAddress -> 010000
+                    .store_uint(1024, 11) ;; std addr 0 workchain
+                    .store_uint(sender_address, 256)
+                    .store_coins(20000000)
+                    .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1)
+                    .store_ref(
+                            begin_cell()
+                            .store_uint(0xF8A7EA50000000000000000, 32 + 64) ;; op + queryId
+                            .store_coins(part) ;; amount
+                            .store_uint(1024, 11) ;; std addr 0 workchain
+                            .store_uint(user, 256) ;; destination
+                            .store_uint(1024, 11) ;; std addr 0 workchain
+                            .store_uint(user, 256) ;; responseDestination
+                            .store_uint(0, 1) ;; custom payload ;; TODO: optimize
+                            .store_coins(1) ;; forward amount
+                            .store_uint(0,1) ;; forward payload
+                            .end_cell()
+                    )
+                    .end_cell(), 1);
+            (user, cs, f) = dict.udict_get_next?(256, user);
+        } until (~ f);
         return();
     }
 }
