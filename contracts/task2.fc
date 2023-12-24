@@ -150,5 +150,5 @@ int get_user_share(slice user_address) method_id {
     var dict = cs.preload_dict();
     user_address~skip_bits(11);
     var (share, res) = dict.udict_get?(256, user_address~load_uint(256));
-    return share.preload_uint(32);
+    return share.preload_uint(1);
 }
