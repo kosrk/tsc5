@@ -96,7 +96,7 @@ int parse_sender_address (cell in_msg_full) inline {
     }
 
     ;; transfer_notification#701c09a6 query_id:uint64 amount:Coins = InternalMsgBody;
-    if (op == 0x701c09a6) { ;; transfer notification
+    if (op == 0x7362d09c) { ;; transfer notification
         var (_, dict, total_share) = load_data(); ;; TODO: load owner first and dict after check
         throw_if(122, dict.dict_empty?());
         in_msg_body~skip_bits(64); ;; query_id
