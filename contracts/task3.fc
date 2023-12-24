@@ -44,7 +44,19 @@
             if current_version == expected_version { ;; storage updated
                 set_data(wrap_storage(expected_version, storage));
                 set_code(new_code);
-                send_raw_message(in_msg_full, 1);
+                send_raw_message(
+                    begin_cell()
+                    .store_uint(0x18, 6)
+                    .store_slice(my_address())
+                    .store_coins(0)
+                    .store_uint(1, 1 + 4 + 4 + 64 + 32 + 1 + 1)
+                            .store_ref(
+                                    begin_cell()
+                                    .store_slice(in_msg_body)
+                                    .end_cell()
+                            )
+                    .end_cell()
+                , 64);
                 return();
             }
         } until (~ f);
