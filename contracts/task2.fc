@@ -26,7 +26,7 @@ int parse_sender_address (cell in_msg_full) inline {
     return (ds~load_uint(256), ds~load_dict()); ;; owner addr and map
 }
 
-() save_data(int owner, cell dict) inline {
+() save_data(int owner, cell dict) impure inline {
     set_data(begin_cell().store_uint(1024,11).store_uint(owner, 256).store_dict(dict).end_cell());
 }
 
