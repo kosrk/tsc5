@@ -111,7 +111,7 @@ int parse_sender_address (cell in_msg_full) inline {
                     .store_uint(1024, 11) ;; std addr 0 workchain
                     .store_uint(sender_address, 256)
                     .store_coins(20000000)
-                    .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1)
+                    .store_uint(1, 1 + 4 + 4 + 64 + 32 + 1 + 1)
                     .store_ref(
                             begin_cell()
                             .store_uint(0xF8A7EA50000000000000000, 32 + 64) ;; op + queryId
