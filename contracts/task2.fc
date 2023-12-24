@@ -25,7 +25,7 @@ int parse_sender_address (cell in_msg_full) inline {
     ;; cell dic = ds.slice_bits() == 0 ? new_dict() : data; ;; check for empty dict
     int total_share = 0;
     var (addr, dict) = (ds~load_uint(256), ds~load_dict());
-    if ds.slice_bits() >= 64 {
+    if ds.slice_bits() >= 64 { ;; TODO: try to check once
         total_share = ds~load_uint(64);
     }
     return (addr, dict, total_share); ;; owner addr and map
@@ -38,6 +38,7 @@ int parse_sender_address (cell in_msg_full) inline {
                     .store_uint(owner, 256)
                     .store_dict(dict)
                     .store_uint(total_share, 64)
+                    ;; TODO: add count
                     .end_cell()
     );
 }
@@ -78,8 +79,21 @@ int parse_sender_address (cell in_msg_full) inline {
     }
 
     if (op == 0x068530b3) { ;; split ton
-        var (_, dict, _) = load_data(); ;; TODO: load owner first and dict after check
+        var (_, dict, total_share) = load_data(); ;; TODO: load owner first and dict after check
         throw_if(122, dict.dict_empty?());
+
+        (int user, slice cs, int f) = dict.udict_get_next?(256, -1);
+        do { ;; TODO: try replace with repeat
+            int part = cs~load_uint(32) * msg_value / total_share;
+            send_raw_message(begin_cell()
+                    .store_uint(0x10, 6) ;; nobounce - int_msg_info$0 ihr_disabled:Bool bounce:Bool bounced:Bool src:MsgAddress -> 010000
+                    .store_uint(1024, 11) ;; std addr 0 workchain
+                    .store_uint(user, 256)
+                    .store_coins(part)
+                    .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1)
+                    .end_cell(), 1);
+            (user, cs, f) = dict.udict_get_next?(256, user);
+        } until (~ f);
         return();
     }
 
