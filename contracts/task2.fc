@@ -7,10 +7,7 @@
 
 ;; storage
 ;; admin_address: MsgAddressInt
-;; users: (HashmapE 267 uint32)
-
-(cell, (slice, int)) ~dict_delete_get?(cell dict, int key_len, slice index) asm(index dict key_len) "DICTDELGET" "NULLSWAPIFNOT";
-(slice, int) dict_get?(cell dict, int key_len, slice index) asm(index dict key_len) "DICTGET" "NULLSWAPIFNOT";
+;; users: (HashmapE 256 uint32)
 
 ;; TODO: move to receiver
 int parse_sender_address (cell in_msg_full) inline {
@@ -42,8 +39,9 @@ int parse_sender_address (cell in_msg_full) inline {
         int sender_address = parse_sender_address(in_msg_full);
         var (owner, dict) = load_data(); ;; TODO: load owner first and dict after check
         throw_unless(120, sender_address == owner);
-        var (_, user, share) = (in_msg_body~load_uint(64), in_msg_body~load_bits(267), in_msg_body~load_uint(32));
-        dict~dict_set_builder(267, user, begin_cell().store_uint(share, 32));
+        in_msg_body~skip_bits(64 + 11); ;; query_id and addr prefix
+        var (user, share) = (in_msg_body~load_uint(256), in_msg_body~load_uint(32));
+        dict~udict_set_builder(256, user, begin_cell().store_uint(share, 32));
         save_data(owner, dict);
         return();
     }
@@ -52,8 +50,8 @@ int parse_sender_address (cell in_msg_full) inline {
         int sender_address = parse_sender_address(in_msg_full);
         var (owner, dict) = load_data(); ;; TODO: load owner first and dict after check
         throw_unless(120, sender_address == owner);
-        var (_, user) = (in_msg_body~load_uint(64), in_msg_body~load_bits(267));
-        var (_ , res) = dict~dict_delete_get?(267, user);
+        var (_, user) = (in_msg_body~load_uint(64 + 11), in_msg_body~load_uint(256));
+        var (_ , res) = dict~udict_delete_get?(256, user);
         throw_unless(121, res);
         save_data(owner, dict);
         return();
@@ -84,6 +82,7 @@ int get_user_share(slice user_address) method_id {
     var cs = get_data().begin_parse();
     cs~skip_bits(267);
     var dict = cs.preload_dict();
-    var (share, res) = dict.dict_get?(267, user_address);
+    user_address~skip_bits(11);
+    var (share, res) = dict.udict_get?(256, user_address~load_uint(256));
     return share.preload_uint(32);
 }
