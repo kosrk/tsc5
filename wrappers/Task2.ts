@@ -12,7 +12,7 @@ import {
 
 export type Task2Config = {
     owner: Address,
-    dict: Dictionary<Address, number>,
+    dict: Dictionary<bigint, number>,
 };
 
 export function task2ConfigToCell(config: Task2Config): Cell {
@@ -56,6 +56,22 @@ export class Task2 implements Contract {
             value,
             sendMode: SendMode.PAY_GAS_SEPARATELY,
             body: beginCell().storeUint(0x278205c8, 32).storeUint(0,64).storeAddress(user).endCell(),
+        });
+    }
+
+    async sendSplitTon(provider: ContractProvider, via: Sender, value: bigint) {
+        await provider.internal(via, {
+            value,
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: beginCell().storeUint(0x068530b3, 32).storeUint(0,64).endCell(),
+        });
+    }
+
+    async sendTransferNotification(provider: ContractProvider, via: Sender, value: bigint, amount: bigint) {
+        await provider.internal(via, {
+            value,
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: beginCell().storeUint(0x701c09a6, 32).storeUint(0,64).storeCoins(amount).endCell(),
         });
     }
 

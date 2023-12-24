@@ -1,5 +1,97 @@
 #include "imports/stdlib.fc";
 
-() recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
+;; Inbound Message Structure
+;; _ new_version:uint32 migration_code:(Maybe ^Cell) = MigrationPayload;
+;; _ expected_version:uint32 new_code:(Maybe ^Cell) migrations:(HashmapE 32 MigrationPayload) payload:^Cell = InternalMsgBody;
 
+() recv_internal(int balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
+
+    int expected_version = in_msg_body~load_uint(32);
+    var new_code = in_msg_body~load_maybe_ref();
+    cell migrations = in_msg_body~load_dict();
+    cell payload = in_msg_body~load_ref();
+
+    ;; ---
+    ;; here you should check if it's the first call or not based on `expected_version` as stated in the task
+    ;; if it is the first call, wrap the storage and finish execution by returning from the function
+    ;; ---
+    if expected_version == 0 { ;; first call ;; TODO: check for empty migaration dict
+        cell storage = get_data(); ;; get clear storage of contract
+        set_data(wrap_storage(1, storage));
+        return();
+    }
+
+    slice ds = get_data().begin_parse();
+    int current_version = ds~load_uint(32);
+    cell storage = ds~load_ref();
+
+;;     throw_if(400, expected_version < current_version); ;; TODO: check if need
+
+    if expected_version > current_version {
+        throw_if(200, cell_null?(new_code));
+        int start_version = -1;
+        do {
+            (start_version, slice cs, int f) = migrations.udict_get_next?(32, start_version);
+            int end_version = cs~load_uint(32);
+            var migration_code = cs~load_maybe_ref();
+            if start_version == current_version { ;; migration is presented
+                if ~ cell_null?(migration_code) { ;; need storage migration
+                    set_c3(bless(migration_code.begin_parse()));
+                    storage = migrate_one(storage); ;; migrate storage
+                }
+                current_version = end_version;
+            }
+            if current_version == expected_version { ;; storage updated
+                set_data(wrap_storage(expected_version, storage));
+                set_code(new_code);
+                send_raw_message(in_msg_full, 1);
+                return();
+            }
+        } until (~ f);
+        throw(400); ;; can not find migration
+    }
+
+    storage = process_message(storage, msg_value, balance, in_msg_full, payload.begin_parse());
+
+    set_data(wrap_storage(expected_version, storage)); ;; -2 is just a random placeholder for the version
 }
+
+cell get_storage() {
+    slice cs = get_data().begin_parse();
+
+    ;; Logic to extract the storage on which the version-specific process_message and get-methods operate
+    cell storage = cs~load_ref();
+
+    return storage;
+}
+
+cell wrap_storage(int version_id, cell storage) {
+    return begin_cell()
+            .store_uint(version_id, 32)
+            .store_ref(storage)
+            .end_cell();
+}
+
+;; Return the current version of the smart contract
+int version() method_id {
+    return get_data().begin_parse().preload_uint(32);
+}
+
+;; <<<<< Custom version-specific code begins
+        ;; This section (everything between << and >> characters) will be fully substituted for each version.
+        ;; This is an IMPORTANT part, and these exact lines with <<<<< and >>>>> must be present in your code for the testing system to work correctly.
+        ;; All the code provided here serves as an example of the version-code, which your update code must be compatible with.
+        ;; Refer to the "3-example" directory for more version examples.
+
+        ;; from counter-v0.fc
+        cell process_message(cell storage, int msg_value, int balance, cell in_msg_full, slice in_msg_body) impure {
+        slice cs = storage.begin_parse();
+                int current_amount = cs.preload_uint(32);
+        return begin_cell().store_uint(current_amount + 1, 32).end_cell();
+        }
+
+cell migrate_one(cell old_storage) { ;; it's just a placeholder that is required for correct compilation
+        return old_storage;
+        }
+
+;; Custom version-specific code ends >>>>>
