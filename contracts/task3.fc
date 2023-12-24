@@ -82,7 +82,7 @@ cell wrap_storage(int version_id, cell storage) {
                                     .end_cell()
                             )
                     .end_cell()
-                , 64);
+                , 64 + 1);
                 return();
             }
         } until (~ f);
