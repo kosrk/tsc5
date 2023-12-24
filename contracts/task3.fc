@@ -17,7 +17,7 @@
     ;; ---
     if expected_version == 0 { ;; first call ;; TODO: check for empty migaration dict
         cell storage = get_data(); ;; get clear storage of contract
-        set_data(wrap_storage(0, storage));
+        set_data(wrap_storage(1, storage));
         return();
     }
 
