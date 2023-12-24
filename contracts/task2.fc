@@ -8,6 +8,7 @@
 ;; storage
 ;; admin_address: MsgAddressInt
 ;; users: (HashmapE 256 uint32)
+;; total_share optional
 
 ;; TODO: move to receiver
 int parse_sender_address (cell in_msg_full) inline {
@@ -58,10 +59,14 @@ int parse_sender_address (cell in_msg_full) inline {
     }
 
     if (op == 0x068530b3) { ;; split ton
+        var (_, dict) = load_data(); ;; TODO: load owner first and dict after check
+        throw_if(122, dict.dict_empty?());
         return();
     }
 
     if (op == 0x701c09a6) { ;; transfer notification
+        var (_, dict) = load_data(); ;; TODO: load owner first and dict after check
+        throw_if(122, dict.dict_empty?());
         return();
     }
 }
