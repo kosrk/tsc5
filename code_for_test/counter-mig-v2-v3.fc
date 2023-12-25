@@ -1,0 +1,16 @@
+;; Migrate storage:
+;; - from 32-bit format storing USD amount
+;; - to 40-bit format storing cents amount
+
+#include "stdlib.fc";
+
+() recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) {
+    ;; do nothing for internal messages
+}
+
+cell migrate_one(cell old_storage) impure {
+    slice cs = old_storage.begin_parse();
+    int amount_USD = cs.preload_uint(32);
+    int amount_cents = amount_USD * 100;
+    return begin_cell().store_uint(amount_cents, 40).end_cell();
+}

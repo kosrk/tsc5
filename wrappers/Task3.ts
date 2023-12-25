@@ -61,4 +61,23 @@ export class Task3 implements Contract {
             gasUsed: result.gasUsed,
         };
     }
+
+    async sendV2(provider: ContractProvider, via: Sender, value: bigint, code: Cell) {
+        let migrationDict = Dictionary.empty<number, MigrationPayload>();
+        let v2migrationPayload = {
+            new_version: 2,
+            migration_code: null
+        }
+        migrationDict.set(1, v2migrationPayload);
+        await provider.internal(via, {
+            value,
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: beginCell()
+                .storeUint(2, 32) // ver 0
+                .storeMaybeRef(code) // v2 code
+                .storeDict(migrationDict) // migration dict with empty migration v1-v2
+                .storeRef(beginCell().endCell()) // empty body
+                .endCell(),
+        });
+    }
 }
