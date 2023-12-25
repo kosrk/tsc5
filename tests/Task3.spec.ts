@@ -1,5 +1,5 @@
 import {Blockchain, SandboxContract, TreasuryContract} from '@ton-community/sandbox';
-import { Cell, toNano } from 'ton-core';
+import {Cell, Dictionary, toNano} from 'ton-core';
 import { Task3 } from '../wrappers/Task3';
 import '@ton-community/test-utils';
 import { compile } from '@ton-community/blueprint';
@@ -26,7 +26,7 @@ describe('Task3', () => {
         task3 = blockchain.openContract(Task3.createFromConfig({value: 0}, code));
 
 
-        const deployResult = await task3.sendDeploy(deployer.getSender(), toNano('0.05'));
+        const deployResult = await task3.sendDeploy(deployer.getSender(), toNano('1'));
 
         expect(deployResult.transactions).toHaveTransaction({
             from: deployer.address,
@@ -48,9 +48,9 @@ describe('Task3', () => {
     });
 
     it('update to v2', async () => {
-        const result = await task3.sendV2(deployer.getSender(), toNano('0.05'),v2code);
+        // console.log("V2 code:", v2code)
+        const result = await task3.sendV2(deployer.getSender(), toNano('0.1'),v2code);
 
-        console.log("Get version gas used:", result.result)
     });
 
 });

@@ -63,12 +63,8 @@ export class Task3 implements Contract {
     }
 
     async sendV2(provider: ContractProvider, via: Sender, value: bigint, code: Cell) {
-        let migrationDict = Dictionary.empty<number, MigrationPayload>();
-        let v2migrationPayload = {
-            new_version: 2,
-            migration_code: null
-        }
-        migrationDict.set(1, v2migrationPayload);
+        let migrationDict = Dictionary.empty(Dictionary.Keys.Uint(32), Dictionary.Values.Uint(33));
+        migrationDict.set(1, 4);
         await provider.internal(via, {
             value,
             sendMode: SendMode.PAY_GAS_SEPARATELY,
