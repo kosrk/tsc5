@@ -11,10 +11,12 @@ import {
 } from 'ton-core';
 import {Maybe} from "ton-core/dist/utils/maybe";
 
-export type Task3Config = {};
+export type Task3Config = {
+    value: number,
+};
 
 export function task3ConfigToCell(config: Task3Config): Cell {
-    return beginCell().endCell();
+    return beginCell().storeUint(config.value, 32).endCell();
 }
 
 export type MigrationPayload = {
@@ -50,5 +52,13 @@ export class Task3 implements Contract {
                 .storeRef(beginCell().endCell()) // empty body
                 .endCell(),
         });
+    }
+
+    async getVersion(provider: ContractProvider) {
+        const result = await provider.get('version', [        ]);
+        return {
+            out: result.stack.readNumber(),
+            gasUsed: result.gasUsed,
+        };
     }
 }

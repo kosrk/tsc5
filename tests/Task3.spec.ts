@@ -17,7 +17,7 @@ describe('Task3', () => {
     beforeEach(async () => {
         blockchain = await Blockchain.create();
 
-        task3 = blockchain.openContract(Task3.createFromConfig({}, code));
+        task3 = blockchain.openContract(Task3.createFromConfig({value: 0}, code));
 
         const deployer = await blockchain.treasury('deployer');
 
@@ -35,4 +35,11 @@ describe('Task3', () => {
         // the check is done inside beforeEach
         // blockchain and task3 are ready to use
     });
+
+    it('get first version', async () => {
+        const value = await task3.getVersion();
+        expect(value.out).toEqual(1);
+        console.log("Get version gas used:", value.gasUsed)
+    });
+
 });
