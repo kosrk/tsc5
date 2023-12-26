@@ -22,26 +22,28 @@ cell wrap_storage(int version_id, cell storage) {
 ;; All the code provided here serves as an example of the version-code, which your update code must be compatible with.
 ;; Refer to the "3-example" directory for more version examples.
 
-;; from counter-v2.fc
+;; from counter-v3.fc
 cell process_message(cell storage, int msg_value, int balance, cell in_msg_full, slice in_msg_body) impure {
     slice cs = storage.begin_parse();
-    int current_amount = cs.preload_uint(32);
+    int current_amount = cs.preload_uint(40);
 
-    int received_amount = in_msg_body~load_uint(32);
+    int received_amount = in_msg_body~load_uint(40);
     current_amount += received_amount;
 
-    return begin_cell().store_uint(current_amount, 32).end_cell();
+    return begin_cell().store_uint(current_amount, 40).end_cell();
 }
 
 int get_amount() method_id {
     cell storage = get_storage();
     slice cs = storage.begin_parse();
-    int amount = cs.preload_uint(32);
+    int amount = cs.preload_uint(40);
     return amount;
 }
 
 int get_USD_amount() method_id {
-    return get_amount();
+    return get_amount() / 100;
+    ;; get_amount returns amount in cents in this version,
+    ;; so to get a USD amount now, we need to divide it by 100
 }
 
 cell migrate_one(cell old_storage) { ;; it's just a placeholder that is required for correct compilation
@@ -49,6 +51,7 @@ cell migrate_one(cell old_storage) { ;; it's just a placeholder that is required
 }
 
 ;; Custom version-specific code ends >>>>>
+
 
 ;; Inbound Message Structure
 ;; _ new_version:uint32 migration_code:(Maybe ^Cell) = MigrationPayload;
@@ -92,7 +95,7 @@ cell migrate_one(cell old_storage) { ;; it's just a placeholder that is required
                 current_version = end_version;
             }
             if current_version == expected_version { ;; storage updated
-                ;;                 set_data(wrap_storage(expected_version, storage));
+                set_data(wrap_storage(expected_version, storage));
                 set_code(new_code);
                 set_c3(bless(new_code.begin_parse()));
                 storage = process_message(storage, msg_value, balance, in_msg_full, payload.begin_parse());

@@ -62,17 +62,28 @@ export class Task3 implements Contract {
         };
     }
 
-    async sendV2(provider: ContractProvider, via: Sender, value: bigint, code: Cell) {
-        let migrationDict = Dictionary.empty(Dictionary.Keys.Uint(32), Dictionary.Values.Uint(33));
-        migrationDict.set(1, 4);
+    async sendV2(provider: ContractProvider, via: Sender, value: bigint, code: Cell, dict: Cell) {
         await provider.internal(via, {
             value,
             sendMode: SendMode.PAY_GAS_SEPARATELY,
             body: beginCell()
-                .storeUint(2, 32) // ver 0
-                .storeMaybeRef(code) // v2 code
-                .storeDict(migrationDict) // migration dict with empty migration v1-v2
-                .storeRef(beginCell().endCell()) // empty body
+                .storeUint(2, 32) // ver 2
+                .storeMaybeRef(code)
+                .storeSlice(dict.beginParse())
+                .storeRef(beginCell().storeUint(100, 32).endCell()) // body with received_amount
+                .endCell(),
+        });
+    }
+
+    async sendV3(provider: ContractProvider, via: Sender, value: bigint, code: Cell, dict: Cell) {
+        await provider.internal(via, {
+            value,
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: beginCell()
+                .storeUint(3, 32) // ver 3
+                .storeMaybeRef(code)
+                .storeSlice(dict.beginParse())
+                .storeRef(beginCell().storeUint(100, 32).endCell()) // body with received_amount
                 .endCell(),
         });
     }
