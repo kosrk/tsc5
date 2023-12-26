@@ -43,6 +43,8 @@ cell wrap_storage(int version_id, cell storage) {
     ;; ---
     if expected_version == 0 { ;; first call ;; TODO: check for empty migaration dict
         var storage = get_data(); ;; get clear storage of contract
+;;         set_data(wrap_storage(1, storage));
+        storage = process_message(storage, msg_value, balance, in_msg_full, payload.begin_parse());
         set_data(wrap_storage(1, storage));
         return();
     }
@@ -71,9 +73,7 @@ cell wrap_storage(int version_id, cell storage) {
 ;;                 set_data(wrap_storage(expected_version, storage));
                 set_code(new_code);
                 set_c3(bless(new_code.begin_parse()));
-                storage~dump();
                 storage = process_message(storage, msg_value, balance, in_msg_full, payload.begin_parse());
-                storage~dump();
                 set_data(wrap_storage(expected_version, storage));
                 return();
             }
