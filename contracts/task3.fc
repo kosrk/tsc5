@@ -1,5 +1,14 @@
 #include "imports/stdlib.fc";
 
+cell get_storage() {
+    slice cs = get_data().begin_parse();
+
+    ;; Logic to extract the storage on which the version-specific process_message and get-methods operate
+    cell storage = cs~load_ref();
+
+    return storage;
+}
+
 ;; <<<<< Custom version-specific code begins
 ;; This section (everything between << and >> characters) will be fully substituted for each version.
 ;; This is an IMPORTANT part, and these exact lines with <<<<< and >>>>> must be present in your code for the testing system to work correctly.
@@ -83,15 +92,6 @@ cell wrap_storage(int version_id, cell storage) {
 
     storage = process_message(storage, msg_value, balance, in_msg_full, payload.begin_parse());
     set_data(wrap_storage(expected_version, storage));
-}
-
-cell get_storage() {
-    slice cs = get_data().begin_parse();
-
-    ;; Logic to extract the storage on which the version-specific process_message and get-methods operate
-    cell storage = cs~load_ref();
-
-    return storage;
 }
 
 ;; Return the current version of the smart contract
