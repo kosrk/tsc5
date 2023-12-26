@@ -67,20 +67,21 @@ cell migrate_one(cell old_storage) { ;; it's just a placeholder that is required
         int start_version = -1;
         do {
             (start_version, slice cs, int f) = migrations.udict_get_next?(32, start_version);
+            throw_unless(400, f);
             int end_version = cs~load_uint(32);
+            start_version~dump();
             if start_version == current_version { ;; migration is presented
                 var migration_code = cs~load_maybe_ref();
                 if ~ cell_null?(migration_code) { ;; need storage migration
                     var old_code = get_c3();
                     set_c3(bless(migration_code.begin_parse()));
-;;                     storage~dump();
                     storage = migrate_one(storage); ;; migrate storage
                     set_c3(old_code);
-;;                     storage~dump();
                 }
                 current_version = end_version;
             }
             if current_version == expected_version { ;; storage updated
+                current_version~dump();
 ;;                 set_data(wrap_storage(expected_version, storage));
                 set_code(new_code);
                 set_c3(bless(new_code.begin_parse()));
