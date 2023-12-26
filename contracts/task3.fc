@@ -9,6 +9,13 @@ cell get_storage() {
     return storage;
 }
 
+cell wrap_storage(int version_id, cell storage) {
+    return begin_cell()
+            .store_uint(version_id, 32)
+            .store_ref(storage)
+            .end_cell();
+}
+
 ;; <<<<< Custom version-specific code begins
 ;; This section (everything between << and >> characters) will be fully substituted for each version.
 ;; This is an IMPORTANT part, and these exact lines with <<<<< and >>>>> must be present in your code for the testing system to work correctly.
@@ -27,13 +34,6 @@ cell migrate_one(cell old_storage) { ;; it's just a placeholder that is required
 }
 
 ;; Custom version-specific code ends >>>>>
-
-cell wrap_storage(int version_id, cell storage) {
-    return begin_cell()
-            .store_uint(version_id, 32)
-            .store_ref(storage)
-            .end_cell();
-}
 
 ;; Inbound Message Structure
 ;; _ new_version:uint32 migration_code:(Maybe ^Cell) = MigrationPayload;
