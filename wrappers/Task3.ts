@@ -83,7 +83,20 @@ export class Task3 implements Contract {
                 .storeUint(3, 32) // ver 3
                 .storeMaybeRef(code)
                 .storeSlice(dict.beginParse())
-                .storeRef(beginCell().storeUint(100, 32).endCell()) // body with received_amount
+                .storeRef(beginCell().storeUint(100, 40).endCell()) // body with received_amount
+                .endCell(),
+        });
+    }
+
+    async sendV4(provider: ContractProvider, via: Sender, value: bigint, code: Cell, dict: Cell) {
+        await provider.internal(via, {
+            value,
+            sendMode: SendMode.PAY_GAS_SEPARATELY,
+            body: beginCell()
+                .storeUint(4, 32) // ver 4
+                .storeMaybeRef(code)
+                .storeSlice(dict.beginParse())
+                .storeRef(beginCell().storeUint(100, 40).endCell()) // body with received_amount
                 .endCell(),
         });
     }

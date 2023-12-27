@@ -9,12 +9,15 @@ describe('Task3', () => {
     let migrationV2V3Code: Cell;
     let v2code: Cell;
     let v3code: Cell;
+    let v4code: Cell;
+    let migrationCell = Cell.fromBase64("te6ccgEBCgEATgABAcABAgmeAAAAAgIDAAlQAAAAJAIBIAQFAQkAAAAA8AYACQAAAAEQART/APSkE/S88sgLBwIBYggJAAbQXwQAGaFa7aGuFj9OyZGWT5M=")
 
     beforeAll(async () => {
         code = await compile('Task3');
         migrationV2V3Code = await compile('Migration');
         v2code = await compile('V2Code');
         v3code = await compile('V3Code');
+        v4code = await compile('V4Code');
     });
 
     let blockchain: Blockchain;
@@ -51,17 +54,21 @@ describe('Task3', () => {
     });
 
     it('update to v2 with valid migration dict', async () => {
-        let c = Cell.fromBase64("te6ccgEBCAEAOgABAcABAgmeAAAAAgIDAAlQAAAAJAIBIAQFAQkAAAAA8AYACQAAAAEQART/APSkE/S88sgLBwAG018E")
-        const result = await task3.sendV2(deployer.getSender(), toNano('1'),v2code, c);
+        const result = await task3.sendV2(deployer.getSender(), toNano('1'),v2code, migrationCell);
         const value = await task3.getVersion();
         expect(value.out).toEqual(2);
     });
 
     it('update to v3 with valid migration dict', async () => {
-        let c = Cell.fromBase64("te6ccgEBCAEAOgABAcABAgmeAAAAAgIDAAlQAAAAJAIBIAQFAQkAAAAA8AYACQAAAAEQART/APSkE/S88sgLBwAG018E")
-        const result = await task3.sendV3(deployer.getSender(), toNano('1'),v3code, c);
+        const result = await task3.sendV3(deployer.getSender(), toNano('1'),v3code, migrationCell);
         const value = await task3.getVersion();
         expect(value.out).toEqual(3);
+    });
+
+    it('update to v4 with valid migration dict', async () => {
+        const result = await task3.sendV4(deployer.getSender(), toNano('1'),v4code, migrationCell);
+        const value = await task3.getVersion();
+        expect(value.out).toEqual(4);
     });
 
     it('update to v3 with invalid migration dict', async () => {
