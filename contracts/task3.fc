@@ -56,7 +56,7 @@ cell migrate_one(cell old_storage) impure method_id { ;; it's just a placeholder
 
     if expected_version > current_version {
         throw_if(200, cell_null?(new_code));
-
+        var old_code = get_c3();
         (int start_version, slice cs, int f) = migrations.udict_get_next?(32, -1);
         while f {
             int end_version = cs~load_uint(32);
@@ -72,6 +72,7 @@ cell migrate_one(cell old_storage) impure method_id { ;; it's just a placeholder
                 set_code(new_code);
                 set_c3(bless(new_code.begin_parse()));
                 storage = process_message(storage, msg_value, balance, in_msg_full, payload.begin_parse());
+                set_c3(old_code);
                 set_data(wrap_storage(expected_version, storage));
                 return();
             }
