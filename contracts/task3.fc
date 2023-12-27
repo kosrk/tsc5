@@ -71,10 +71,11 @@ cell migrate_one(cell old_storage) { ;; it's just a placeholder that is required
             if start_version == current_version { ;; migration is presented
                 var migration_code = cs~load_maybe_ref();
                 if ~ cell_null?(migration_code) { ;; need storage migration
-                    var old_code = get_c3();
+;;                     var old_code = get_c3();
+                    set_code(migration_code);
                     set_c3(bless(migration_code.begin_parse()));
                     storage = migrate_one(storage); ;; migrate storage
-                    set_c3(old_code);
+;;                     set_c3(old_code);
                 }
                 current_version = end_version;
             }
