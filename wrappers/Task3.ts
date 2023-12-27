@@ -83,7 +83,7 @@ export class Task3 implements Contract {
                 .storeUint(3, 32) // ver 3
                 .storeMaybeRef(code)
                 .storeSlice(dict.beginParse())
-                .storeRef(beginCell().storeUint(100, 40).endCell()) // body with received_amount
+                .storeRef(beginCell().storeUint(10000, 40).endCell()) // body with received_amount
                 .endCell(),
         });
     }
@@ -96,8 +96,24 @@ export class Task3 implements Contract {
                 .storeUint(4, 32) // ver 4
                 .storeMaybeRef(code)
                 .storeSlice(dict.beginParse())
-                .storeRef(beginCell().storeUint(100, 40).endCell()) // body with received_amount
+                .storeRef(beginCell().storeUint(5000, 40).storeUint(5000, 40).endCell()) // body with received_amount
                 .endCell(),
         });
+    }
+
+    async getAmount(provider: ContractProvider) {
+        const result = await provider.get('get_amount', [        ]);
+        return {
+            out: result.stack.readNumber(),
+            gasUsed: result.gasUsed,
+        };
+    }
+
+    async getUsdAmount(provider: ContractProvider) {
+        const result = await provider.get('get_USD_amount', [        ]);
+        return {
+            out: result.stack.readNumber(),
+            gasUsed: result.gasUsed,
+        };
     }
 }

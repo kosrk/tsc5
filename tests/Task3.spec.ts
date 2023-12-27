@@ -1,5 +1,5 @@
 import {Blockchain, SandboxContract, TreasuryContract} from '@ton-community/sandbox';
-import {Cell, Dictionary, toNano} from 'ton-core';
+import {beginCell, Cell, Dictionary, toNano} from 'ton-core';
 import { Task3 } from '../wrappers/Task3';
 import '@ton-community/test-utils';
 import { compile } from '@ton-community/blueprint';
@@ -28,7 +28,7 @@ describe('Task3', () => {
         blockchain = await Blockchain.create();
         deployer = await blockchain.treasury('deployer');
 
-        task3 = blockchain.openContract(Task3.createFromConfig({value: 0}, code));
+        task3 = blockchain.openContract(Task3.createFromConfig({value: 600}, code));
 
 
         const deployResult = await task3.sendDeploy(deployer.getSender(), toNano('1'));
@@ -44,7 +44,7 @@ describe('Task3', () => {
     it('should deploy', async () => {
         // the check is done inside beforeEach
         // blockchain and task3 are ready to use
-        console.log("Migration code:", migrationV2V3Code.toBoc().toString("base64"))
+        // console.log("Migration code:", migrationV2V3Code.toBoc().toString("base64"))
     });
 
     it('get first version', async () => {
@@ -57,18 +57,28 @@ describe('Task3', () => {
         const result = await task3.sendV2(deployer.getSender(), toNano('1'),v2code, migrationCell);
         const value = await task3.getVersion();
         expect(value.out).toEqual(2);
+        const value2 = await task3.getAmount();
+        expect(value2.out).toEqual(700);
+        const value3 = await task3.getUsdAmount();
+        expect(value3.out).toEqual(700);
     });
 
     it('update to v3 with valid migration dict', async () => {
         const result = await task3.sendV3(deployer.getSender(), toNano('1'),v3code, migrationCell);
         const value = await task3.getVersion();
         expect(value.out).toEqual(3);
+        const value2 = await task3.getAmount();
+        expect(value2.out).toEqual(70000);
+        const value3 = await task3.getUsdAmount();
+        expect(value3.out).toEqual(700);
     });
 
     it('update to v4 with valid migration dict', async () => {
         const result = await task3.sendV4(deployer.getSender(), toNano('1'),v4code, migrationCell);
         const value = await task3.getVersion();
         expect(value.out).toEqual(4);
+        const value3 = await task3.getUsdAmount();
+        expect(value3.out).toEqual(700);
     });
 
     it('update to v3 with invalid migration dict', async () => {
@@ -93,9 +103,13 @@ describe('Task3', () => {
         })
     });
 
-    it('valid migration dict', async () => {
-        // 1->2 , 2->3 with data migration, 3->4
-        let c = Cell.fromBase64("te6ccgEBCAEAOgABAcABAgmeAAAAAgIDAAlQAAAAJAIBIAQFAQkAAAAA8AYACQAAAAEQART/APSkE/S88sgLBwAG018E")
+    it('update with empty code cell', async () => {
+        const result = await task3.sendV3(deployer.getSender(), toNano('1'),beginCell().endCell(), migrationCell);
+        const value = await task3.getVersion();
+        expect(value.out).toEqual(1);
+        expect(result.transactions).toHaveTransaction({
+            exitCode: 200,
+        })
     });
 
 });
