@@ -1,5 +1,12 @@
 #include "imports/stdlib.fc";
 
+cell wrap_storage(int version_id, cell storage) {
+    return begin_cell()
+    .store_uint(version_id, 32)
+    .store_ref(storage)
+    .end_cell();
+}
+
 ;; <<<<< Custom version-specific code begins
 ;; This section (everything between << and >> characters) will be fully substituted for each version.
 ;; This is an IMPORTANT part, and these exact lines with <<<<< and >>>>> must be present in your code for the testing system to work correctly.
@@ -19,21 +26,6 @@ cell migrate_one(cell old_storage) impure method_id { ;; it's just a placeholder
 
 ;; Custom version-specific code ends >>>>>
 
-cell get_storage() {
-    slice cs = get_data().begin_parse();
-
-    ;; Logic to extract the storage on which the version-specific process_message and get-methods operate
-    cell storage = cs~load_ref();
-
-    return storage;
-}
-
-cell wrap_storage(int version_id, cell storage) {
-    return begin_cell()
-    .store_uint(version_id, 32)
-    .store_ref(storage)
-    .end_cell();
-}
 
 ;; Inbound Message Structure
 ;; _ new_version:uint32 migration_code:(Maybe ^Cell) = MigrationPayload;
@@ -97,3 +89,11 @@ int version() method_id {
     return get_data().begin_parse().preload_uint(32);
 }
 
+cell get_storage() {
+    slice cs = get_data().begin_parse();
+
+    ;; Logic to extract the storage on which the version-specific process_message and get-methods operate
+    cell storage = cs~load_ref();
+
+    return storage;
+}
