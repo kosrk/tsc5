@@ -1,5 +1,72 @@
 #include "imports/stdlib.fc";
 
+forall X -> tuple ut(X x) asm "NOP";
+(int) tlen (tuple t) asm "TLEN";
+forall X -> int is_null (X x) asm "ISNULL";
+forall X -> (tuple, ()) push_back (tuple tail, X head) asm "CONS";
+forall X -> (tuple, (X)) pop_back (tuple t) asm "UNCONS";
+
+const int x = 88; ;; X
+const int d = 46; ;; .
+const int q = 63; ;; ?
+const int s = 83; ;; S
+const int e = 69; ;; E
+const int p = 33; ;; !
+
 () recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
 
+}
+
+(int, tuple) step(int n, int m, int end_i, int end_j, tuple old_wave) inline {
+;;     ++wave_step;
+    while (~ old_wave.is_null()) { ;; TODO: replace with repeat
+        var m = old_wave~pop_back();
+        ;; TODO: implement
+    }
+    return (-1, old_wave);
+}
+
+(int, int, int, tuple) solve(int n, int m, tuple maze) method_id {
+
+    ;; INIT
+    var l_map = empty_tuple();
+    var start_i = 0;
+    var start_j = 0;
+    var end_i = 0;
+    var end_j = 0;
+
+    ;; FILL LMAP, START, END POINTS
+    var i = 0;
+    repeat (n) {
+        var j = 0;
+        var row = empty_tuple();
+        repeat (m) {
+            var item = maze.at(i).at(j);
+            if maze.at(i).at(j) == s {
+                start_i = i;
+                start_j = j;
+                row~tpush(0);
+            } else {
+                row~tpush(-1);
+            }
+            if maze.at(i).at(j) == e {
+                end_i = i;
+                end_j = j;
+            }
+            j = j + 1;
+        }
+        l_map~tpush(row);
+        i = i + 1;
+    }
+
+    tuple old_wave = null();
+    old_wave~push_back(ut([start_i, start_j]));
+    var wave_step = 0;
+    var run = 0;
+    ;; ITERATE
+    while (~ old_wave.is_null()) & run {
+        (run, old_wave) = step(n, m, end_i, end_j, old_wave);
+    }
+
+    return (0, 0, 0, maze);
 }
