@@ -106,7 +106,7 @@ describe('Task4Basic', () => {
     });
 
     it('solve', async () => {
-        const value = await task4Basic.getSolve(maze1);
+        const value = await task4Basic.getSolve(maze2);
         console.log("Solve gas used:", value.gasUsed)
         // console.log("Resulting maze:", value.maze)
         await task4Basic.plotMaze(value.maze)

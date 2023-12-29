@@ -17,18 +17,68 @@ const int p = 33; ;; !
 
 }
 
-(int, tuple) step(int n, int m, int end_i, int end_j, tuple old_wave) inline {
-;;     ++wave_step;
-    while (~ old_wave.is_null()) { ;; TODO: replace with repeat
-        var m = old_wave~pop_back();
-        ;; TODO: implement
+tuple write_at(tuple in_tup, int n, int m, int in_i, int in_j, tuple val) inline {
+    var i = 0;
+    var j = 0;
+    var res = empty_tuple();
+    repeat (n) {
+        var row = empty_tuple();
+        repeat (m) {
+            if (i == in_i) & (j == in_j) {
+                row~tpush(val);
+            } else {
+                row~tpush(in_tup.at(i).at(j));
+            }
+            j = j + 1;
+        }
+        j = 0;
+        i = i + 1;
+        res~tpush(row);
     }
-    return (-1, old_wave);
+    return res;
+}
+
+(tuple, tuple) check_for(tuple maze, tuple lmap, tuple new_wave, int m, int n, int i, int j, int step) inline {
+    if (i >= 0) & (i < n) & (j >= 0) & (j < m) {
+        var symb = maze.at(i).at(j);
+        if symb == d {
+            if lmap.at(i).at(j).at(0) == -1 {
+                new_wave~push_back(ut([i, j]));
+                lmap = lmap.write_at(n, m, i, j, ut([step, 0]));
+            }
+        }
+        if symb == q {
+            if lmap.at(i).at(j).at(0) == -1 {
+                new_wave~push_back(ut([i, j]));
+                lmap = lmap.write_at(n, m, i, j, ut([step, 1]));
+            }
+        }
+    }
+    return (lmap, new_wave);
+}
+
+(int, tuple, tuple) step(int n, int m, int end_i, int end_j, tuple old_wave, tuple maze, tuple lmap, int step) inline {
+    tuple new_wave = null();
+    while (~ old_wave.is_null()) {
+        var cur = old_wave~pop_back();
+        var cur_i = cur.at(0);
+        var cur_j = cur.at(1);
+        (lmap, new_wave) = check_for(maze, lmap, new_wave, m, n, cur_i - 1, cur_j - 1, step);
+        (lmap, new_wave) = check_for(maze, lmap, new_wave, m, n, cur_i - 1, cur_j, step);
+        (lmap, new_wave) = check_for(maze, lmap, new_wave, m, n, cur_i - 1, cur_j + 1, step);
+        (lmap, new_wave) = check_for(maze, lmap, new_wave, m, n, cur_i, cur_j + 1, step);
+        (lmap, new_wave) = check_for(maze, lmap, new_wave, m, n, cur_i + 1, cur_j + 1, step);
+        (lmap, new_wave) = check_for(maze, lmap, new_wave, m, n, cur_i + 1, cur_j, step);
+        (lmap, new_wave) = check_for(maze, lmap, new_wave, m, n, cur_i + 1, cur_j - 1, step);
+        (lmap, new_wave) = check_for(maze, lmap, new_wave, m, n, cur_i, cur_j - 1, step);
+    }
+    return (-1, new_wave, lmap);
 }
 
 (int, int, int, tuple) solve(int n, int m, tuple maze) method_id {
 
     ;; INIT
+;;     var l_map = empty_tuple();
     var l_map = empty_tuple();
     var start_i = 0;
     var start_j = 0;
@@ -45,9 +95,9 @@ const int p = 33; ;; !
             if maze.at(i).at(j) == s {
                 start_i = i;
                 start_j = j;
-                row~tpush(0);
+                row~tpush(ut([0, 0]));
             } else {
-                row~tpush(-1);
+                row~tpush(ut([-1, 0]));
             }
             if maze.at(i).at(j) == e {
                 end_i = i;
@@ -61,12 +111,13 @@ const int p = 33; ;; !
 
     tuple old_wave = null();
     old_wave~push_back(ut([start_i, start_j]));
-    var wave_step = 0;
-    var run = 0;
+    var wave_step = 1;
+    var run = -1;
     ;; ITERATE
     while (~ old_wave.is_null()) & run {
-        (run, old_wave) = step(n, m, end_i, end_j, old_wave);
+        (run, old_wave, l_map) = step(n, m, end_i, end_j, old_wave, maze, l_map, wave_step);
+        wave_step = wave_step + 1;
     }
-
+    l_map~dump();
     return (0, 0, 0, maze);
 }
