@@ -25,7 +25,7 @@ tuple sort_by_prob(tuple stack) {
     var last = ut([0, 0, 100]);
     while (~ stack.is_null()) {
         var cur = stack~pop_back();
-        while (~ temp.is_null()) & (last.at(2) < cur.at(2)) {
+        while (~ temp.is_null()) & (last.at(2) > cur.at(2)) {
             stack~push_back(temp~pop_back());
         }
         temp~push_back(cur);
