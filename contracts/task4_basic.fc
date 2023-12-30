@@ -14,7 +14,7 @@ const int e = 69; ;; E
 const int p = 33; ;; !
 
 () recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
-
+    return();
 }
 
 tuple write_at(tuple in_tup, int n, int m, int in_i, int in_j, tuple val) inline {

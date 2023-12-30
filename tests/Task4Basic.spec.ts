@@ -35,6 +35,17 @@ describe('Task4Basic', () => {
         [x,x,x,d,d,d,x,x], // X	X X . !	! X	X
     ];
 
+    let m1_in_valid: number[][] = [
+        [x,x,x,x,x,x,e,d], // X	X X	X X X E	.
+        [x,x,d,x,x,x,x,d], // X	X .	X X X X	.
+        [x,d,x,d,x,x,x,d], // X	. X	. X X X	.
+        [d,q,x,s,x,x,x,d], // .	? X	S X	X X	.
+        [q,d,x,x,x,x,x,d], // ?	. X	X X	X X	.
+        [x,x,d,d,x,x,x,d], // X	X .	. X	X X	.
+        [x,x,d,d,x,x,q,x], // X	X .	. X	X ?	X
+        [x,x,x,d,d,d,x,x], // X	X X . .	. X	X
+    ];
+
     let m2_in: number[][] = [
         [s,x,d,q,x], // S X . ? X
         [d,x,x,d,x], // . X X . X
@@ -56,6 +67,22 @@ describe('Task4Basic', () => {
         [x,d,d,d,e], // X . . . E
     ];
 
+    let m2_in_neighbours: number[][] = [
+        [s,x,d,q,x], // S X . ? X
+        [d,e,x,d,x], // . E X . X
+        [x,d,q,d,d], // X . ? . .
+        [d,q,q,d,d], // . ? ? . .
+        [x,q,d,d,d], // X ? . . .
+        [d,d,x,d,x], // . . X . X
+        [d,d,q,d,d], // . . ? . .
+        [x,d,d,d,d], // X . . . .
+    ];
+
+    let m3_in: number[][] = [
+        [x,s], // X S
+        [e,x], // E X
+    ];
+
     let m1_tb = new TupleBuilder();
     for (let i= 0; i < m1_in.length; i++) {
         let row = new TupleBuilder();
@@ -75,6 +102,36 @@ describe('Task4Basic', () => {
         m2_tb.writeTuple(row.build())
     }
     let maze2: Tuple = {type: 'tuple', items: m2_tb.build()};
+
+    let m3_tb = new TupleBuilder();
+    for (let i= 0; i < m1_in_valid.length; i++) {
+        let row = new TupleBuilder();
+        for (let j= 0; j < m1_in_valid[0].length; j++) {
+            row.writeNumber(m1_in_valid[i][j])
+        }
+        m3_tb.writeTuple(row.build())
+    }
+    let maze3: Tuple = {type: 'tuple', items: m3_tb.build()};
+
+    let m4_tb = new TupleBuilder();
+    for (let i= 0; i < m2_in_neighbours.length; i++) {
+        let row = new TupleBuilder();
+        for (let j= 0; j < m2_in_neighbours[0].length; j++) {
+            row.writeNumber(m2_in_neighbours[i][j])
+        }
+        m4_tb.writeTuple(row.build())
+    }
+    let maze4: Tuple = {type: 'tuple', items: m4_tb.build()};
+
+    let m5_tb = new TupleBuilder();
+    for (let i= 0; i < m3_in.length; i++) {
+        let row = new TupleBuilder();
+        for (let j= 0; j < m3_in[0].length; j++) {
+            row.writeNumber(m3_in[i][j])
+        }
+        m5_tb.writeTuple(row.build())
+    }
+    let maze5: Tuple = {type: 'tuple', items: m5_tb.build()};
 
     beforeAll(async () => {
         code = await compile('Task4Basic');
@@ -105,22 +162,48 @@ describe('Task4Basic', () => {
         // blockchain and task4Basic are ready to use
     });
 
-    it('solve maze 1', async () => {
+    it('Maze 1', async () => {
         const value = await task4Basic.getSolve(maze1);
         console.log("Distance:", value.length, "\nObstacles in superposition:", value.obstacles, "\nGas used:", value.gasUsed)
+        expect(value.length).toEqual(0);
+        expect(value.obstacles).toEqual(0);
+        expect(value.changes).toEqual(-1);
         expect(value.maze).toEqual(null);
-        // await task4Basic.plotMaze(value.maze)
-        // expect(value.length).toEqual(7);
-        // expect(value.obstacles).toEqual(1);
-        // expect(value.changes).toEqual(-1);
     });
 
-    it('solve maze 2', async () => {
+    it('Maze 2', async () => {
         const value = await task4Basic.getSolve(maze2);
         console.log("Distance:", value.length, "\nObstacles in superposition:", value.obstacles, "\nGas used:", value.gasUsed)
         await task4Basic.plotMaze(value.maze)
         expect(value.length).toEqual(7);
         expect(value.obstacles).toEqual(1);
+        expect(value.changes).toEqual(-1);
+    });
+
+    it('Valid maze 1', async () => {
+        const value = await task4Basic.getSolve(maze3);
+        console.log("Distance:", value.length, "\nObstacles in superposition:", value.obstacles, "\nGas used:", value.gasUsed)
+        await task4Basic.plotMaze(value.maze)
+        // expect(value.length).toEqual(7);
+        expect(value.obstacles).toEqual(1);
+        expect(value.changes).toEqual(-1);
+    });
+
+    it('Neighbours', async () => {
+        const value = await task4Basic.getSolve(maze4);
+        console.log("Distance:", value.length, "\nObstacles in superposition:", value.obstacles, "\nGas used:", value.gasUsed)
+        await task4Basic.plotMaze(value.maze)
+        // expect(value.length).toEqual(7);
+        // expect(value.obstacles).toEqual(1);
+        expect(value.changes).toEqual(-1);
+    });
+
+    it('2x2', async () => {
+        const value = await task4Basic.getSolve(maze5);
+        console.log("Distance:", value.length, "\nObstacles in superposition:", value.obstacles, "\nGas used:", value.gasUsed)
+        await task4Basic.plotMaze(value.maze)
+        // expect(value.length).toEqual(7);
+        // expect(value.obstacles).toEqual(1);
         expect(value.changes).toEqual(-1);
     });
 
