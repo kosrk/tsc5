@@ -105,11 +105,23 @@ describe('Task4Basic', () => {
         // blockchain and task4Basic are ready to use
     });
 
-    it('solve', async () => {
+    it('solve maze 1', async () => {
+        const value = await task4Basic.getSolve(maze1);
+        console.log("Distance:", value.length, "\nObstacles in superposition:", value.obstacles, "\nGas used:", value.gasUsed)
+        expect(value.maze).toEqual(null);
+        // await task4Basic.plotMaze(value.maze)
+        // expect(value.length).toEqual(7);
+        // expect(value.obstacles).toEqual(1);
+        // expect(value.changes).toEqual(-1);
+    });
+
+    it('solve maze 2', async () => {
         const value = await task4Basic.getSolve(maze2);
-        console.log("Solve gas used:", value.gasUsed)
-        // console.log("Resulting maze:", value.maze)
+        console.log("Distance:", value.length, "\nObstacles in superposition:", value.obstacles, "\nGas used:", value.gasUsed)
         await task4Basic.plotMaze(value.maze)
+        expect(value.length).toEqual(7);
+        expect(value.obstacles).toEqual(1);
+        expect(value.changes).toEqual(-1);
     });
 
 });

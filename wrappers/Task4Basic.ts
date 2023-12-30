@@ -10,6 +10,7 @@ import {
     Tuple, TupleBuilder,
     TupleReader
 } from 'ton-core';
+import {isNull} from "node:util";
 
 export type Task4BasicConfig = {};
 
@@ -47,7 +48,10 @@ export class Task4Basic implements Contract {
         });
     }
 
-    async plotMaze(t: TupleReader) {
+    async plotMaze(t: TupleReader | null) {
+        if (t == null) {
+            return;
+        }
         let res = '';
         while (t.remaining > 0) {
             let row = t.readTuple();
@@ -75,7 +79,7 @@ export class Task4Basic implements Contract {
             changes: result.stack.readNumber(),
             obstacles: result.stack.readNumber(),
             length: result.stack.readNumber(),
-            maze: result.stack.readTuple(),
+            maze: result.stack.readTupleOpt(),
             gasUsed: result.gasUsed,
         };
     }
