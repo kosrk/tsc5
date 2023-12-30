@@ -50,6 +50,7 @@ export class Task4Basic implements Contract {
 
     async plotMaze(t: TupleReader | null) {
         if (t == null) {
+            console.log("Not solved.\n")
             return;
         }
         let res = '';

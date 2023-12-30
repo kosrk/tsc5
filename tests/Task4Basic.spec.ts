@@ -38,7 +38,7 @@ describe('Task4Basic', () => {
     let m1_in_valid: number[][] = [
         [x,x,x,x,x,x,e,d], // X	X X	X X X E	.
         [x,x,d,x,x,x,x,d], // X	X .	X X X X	.
-        [x,d,x,d,x,x,x,d], // X	. X	. X X X	.
+        [x,d,x,d,x,x,d,x], // X	. X	. X X .	X
         [d,q,x,s,x,x,x,d], // .	? X	S X	X X	.
         [q,d,x,x,x,x,x,d], // ?	. X	X X	X X	.
         [x,x,d,d,x,x,x,d], // X	X .	. X	X X	.
@@ -81,6 +81,12 @@ describe('Task4Basic', () => {
     let m3_in: number[][] = [
         [x,s], // X S
         [e,x], // E X
+    ];
+
+    let m4_in: number[][] = [
+        [s,x,d,q], // S . . ?
+        [d,x,x,d], // . ? ? .
+        [d,x,e,d], // X X E .
     ];
 
     let m1_tb = new TupleBuilder();
@@ -132,6 +138,16 @@ describe('Task4Basic', () => {
         m5_tb.writeTuple(row.build())
     }
     let maze5: Tuple = {type: 'tuple', items: m5_tb.build()};
+
+    let m6_tb = new TupleBuilder();
+    for (let i= 0; i < m4_in.length; i++) {
+        let row = new TupleBuilder();
+        for (let j= 0; j < m4_in[0].length; j++) {
+            row.writeNumber(m4_in[i][j])
+        }
+        m6_tb.writeTuple(row.build())
+    }
+    let maze6: Tuple = {type: 'tuple', items: m6_tb.build()};
 
     beforeAll(async () => {
         code = await compile('Task4Basic');
@@ -204,6 +220,13 @@ describe('Task4Basic', () => {
         await task4Basic.plotMaze(value.maze)
         // expect(value.length).toEqual(7);
         // expect(value.obstacles).toEqual(1);
+        expect(value.changes).toEqual(-1);
+    });
+
+    it('3x4', async () => {
+        const value = await task4Basic.getSolve(maze6);
+        console.log("Distance:", value.length, "\nObstacles in superposition:", value.obstacles, "\nGas used:", value.gasUsed)
+        await task4Basic.plotMaze(value.maze)
         expect(value.changes).toEqual(-1);
     });
 

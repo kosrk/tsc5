@@ -17,6 +17,26 @@ const int p = 33; ;; !
     return();
 }
 
+tuple sort_by_prob(tuple stack) {
+;;     if (~ stack.is_null()) {
+;;         stack~dump();
+;;     }
+    var temp = null();
+    var last = ut([0, 0, 100]);
+    while (~ stack.is_null()) {
+        var cur = stack~pop_back();
+        while (~ temp.is_null()) & (last.at(2) < cur.at(2)) {
+            stack~push_back(temp~pop_back());
+        }
+        temp~push_back(cur);
+        last = cur;
+    }
+;;     if (~ temp.is_null()) {
+;;     temp~dump();
+;;     }
+    return temp;
+}
+
 tuple write_at(tuple in_tup, int n, int m, int in_i, int in_j, tuple val) inline {
     var i = 0;
     var j = 0;
@@ -82,13 +102,13 @@ tuple write_path_symbol(tuple in_tup, int n, int m, int in_i, int in_j) inline {
         var symb = maze.at(i).at(j);
         if symb == d {
             if lmap.at(i).at(j).at(0) == -1 {
-                priority_cells~push_back(ut([i, j])); ;; dot cells must be extracted first
+                priority_cells~push_back(ut([i, j, prob])); ;; dot cells must be extracted first
                 lmap = lmap.write_at(n, m, i, j, ut([step, prob]));
             }
         }
         if symb == q {
             if lmap.at(i).at(j).at(0) == -1 {
-                new_wave~push_back(ut([i, j]));
+                new_wave~push_back(ut([i, j, prob + 1]));
                 lmap = lmap.write_at(n, m, i, j, ut([step, prob + 1]));
             }
         }
@@ -112,6 +132,7 @@ tuple write_path_symbol(tuple in_tup, int n, int m, int in_i, int in_j) inline {
         (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i + 1, cur_j, step, prob);
         (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i + 1, cur_j - 1, step, prob);
         (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i, cur_j - 1, step, prob);
+        new_wave = sort_by_prob(new_wave);
         while (~ priority_cells.is_null()) { ;; Push dot cell to head ;; TODO: try cons
             var pc = priority_cells~pop_back();
             new_wave~push_back(pc);
@@ -140,6 +161,16 @@ tuple write_path_symbol(tuple in_tup, int n, int m, int in_i, int in_j) inline {
 }
 
 (int, int, int, tuple) solve(int n, int m, tuple maze) method_id {
+
+;;     tuple test = null();
+;;     test~push_back(3);
+;;     test~push_back(7);
+;;     test~push_back(2);
+;;     test~push_back(5);
+;;
+;;     test~dump();
+;;     var qqq = sort_by_prob(test);
+;;     qqq~dump();
 
     ;; INIT
     var l_map = empty_tuple();
