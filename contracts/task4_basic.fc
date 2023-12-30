@@ -17,7 +17,7 @@ const int p = 33; ;; !
     return();
 }
 
-tuple sort_by_prob(tuple stack) {
+tuple sort_by_prob(tuple stack) inline {
 ;;     if (~ stack.is_null()) {
 ;;         stack~dump();
 ;;     }
@@ -132,7 +132,7 @@ tuple write_path_symbol(tuple in_tup, int n, int m, int in_i, int in_j) inline {
         (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i + 1, cur_j, step, prob);
         (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i + 1, cur_j - 1, step, prob);
         (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i, cur_j - 1, step, prob);
-        new_wave = sort_by_prob(new_wave);
+;;         new_wave = sort_by_prob(new_wave);
         while (~ priority_cells.is_null()) { ;; Push dot cell to head ;; TODO: try cons
             var pc = priority_cells~pop_back();
             new_wave~push_back(pc);
@@ -161,16 +161,6 @@ tuple write_path_symbol(tuple in_tup, int n, int m, int in_i, int in_j) inline {
 }
 
 (int, int, int, tuple) solve(int n, int m, tuple maze) method_id {
-
-;;     tuple test = null();
-;;     test~push_back(3);
-;;     test~push_back(7);
-;;     test~push_back(2);
-;;     test~push_back(5);
-;;
-;;     test~dump();
-;;     var qqq = sort_by_prob(test);
-;;     qqq~dump();
 
     ;; INIT
     var l_map = empty_tuple();
