@@ -25,7 +25,7 @@ tuple sort_by_prob(tuple stack) inline {
     var last = ut([0, 0, 100]);
     while (~ stack.is_null()) {
         var cur = stack~pop_back();
-        while (~ temp.is_null()) & (last.at(2) > cur.at(2)) {
+        while (~ temp.is_null()) & (last.at(2) < cur.at(2)) {
             stack~push_back(temp~pop_back());
         }
         temp~push_back(cur);
@@ -142,11 +142,15 @@ tuple write_path_symbol(tuple in_tup, int n, int m, int in_i, int in_j) inline {
         (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i + 1, cur_j, step, prob);
         (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i, cur_j + 1, step, prob);
         (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i - 1, cur_j, step, prob);
-;;         new_wave = sort_by_prob(new_wave);
         while (~ priority_cells.is_null()) { ;; Push dot cell to head ;; TODO: try cons
             var pc = priority_cells~pop_back();
             new_wave~push_back(pc);
         }
+        new_wave = sort_by_prob(new_wave);
+;;         new_wave~dump();
+;;         var nn = new_wave~pop_back();
+;;         nn~dump();
+;;         new_wave~push_back(nn);
     }
     return (new_wave, lmap);
 }
@@ -173,9 +177,9 @@ tuple write_path_symbol(tuple in_tup, int n, int m, int in_i, int in_j) inline {
 (int, int, int, tuple) solve(int n, int m, tuple maze) method_id {
 
 ;;     throw_if(100, (n < 2) | (m < 2) | (n > 8) | (m > 8));
-    if ((n < 2) | (m < 2) | (n > 8) | (m > 8)) {
-        return (-1, 0, 0, null());
-    }
+;;     if ((n < 2) | (m < 2) | (n > 8) | (m > 8)) {
+;;         return (-1, 0, 0, null());
+;;     }
 
     ;; INIT
     var l_map = empty_tuple();

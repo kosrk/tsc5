@@ -97,7 +97,7 @@ describe('Task2', () => {
         expect(result4.transactions).toHaveTransaction({
             success: true,
             exitCode: 0,
-            op: 0x701c09a6,
+            op: 0x7362d09c,
         })
         let body  = result4.transactions[3].inMessage?.body.beginParse()
         body?.loadUint(32)

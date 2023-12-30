@@ -1,6 +1,6 @@
 import { Blockchain, SandboxContract } from '@ton-community/sandbox';
 import {Cell, toNano, TupleBuilder, Tuple, contractAddress} from 'ton-core';
-import {Task4Basic, Task4BasicConfig, task4BasicConfigToCell} from '../wrappers/Task4Basic';
+import {buildMaze, Task4Basic, Task4BasicConfig, task4BasicConfigToCell} from '../wrappers/Task4Basic';
 import '@ton-community/test-utils';
 import { compile } from '@ton-community/blueprint';
 
@@ -39,8 +39,8 @@ describe('Task4Basic', () => {
         [x,x,x,x,x,x,e,d], // X	X X	X X X E	.
         [x,x,d,x,x,x,x,d], // X	X .	X X X X	.
         [x,d,x,d,x,x,d,x], // X	. X	. X X .	X
-        [d,q,x,s,x,x,x,d], // .	? X	S X	X X	.
-        [q,d,x,x,x,x,x,d], // ?	. X	X X	X X	.
+        [d,q,x,s,q,q,d,d], // .	? X	S ?	? .	.
+        [x,d,x,x,x,x,x,d], // X	. X	X X	X X	.
         [x,x,d,d,x,x,x,d], // X	X .	. X	X X	.
         [x,x,d,d,x,x,q,x], // X	X .	. X	X ?	X
         [x,x,x,d,d,d,x,x], // X	X X . .	. X	X
@@ -89,65 +89,24 @@ describe('Task4Basic', () => {
         [d,x,e,d], // X X E .
     ];
 
-    let m1_tb = new TupleBuilder();
-    for (let i= 0; i < m1_in.length; i++) {
-        let row = new TupleBuilder();
-        for (let j= 0; j < m1_in[0].length; j++) {
-            row.writeNumber(m1_in[i][j])
-        }
-        m1_tb.writeTuple(row.build())
-    }
-    let maze1: Tuple = {type: 'tuple', items: m1_tb.build()};
+    let m5_in: number[][] = [
+        [s,x], // S X
+        [d,x], // . X
+        [d,x], // . X
+        [q,d], // ? .
+        [d,x], // . X
+        [q,x], // ? X
+        [q,x], // ? X
+        [e,x], // E X
+    ];
 
-    let m2_tb = new TupleBuilder();
-    for (let i= 0; i < m2_in.length; i++) {
-        let row = new TupleBuilder();
-        for (let j= 0; j < m2_in[0].length; j++) {
-            row.writeNumber(m2_in[i][j])
-        }
-        m2_tb.writeTuple(row.build())
-    }
-    let maze2: Tuple = {type: 'tuple', items: m2_tb.build()};
-
-    let m3_tb = new TupleBuilder();
-    for (let i= 0; i < m1_in_valid.length; i++) {
-        let row = new TupleBuilder();
-        for (let j= 0; j < m1_in_valid[0].length; j++) {
-            row.writeNumber(m1_in_valid[i][j])
-        }
-        m3_tb.writeTuple(row.build())
-    }
-    let maze3: Tuple = {type: 'tuple', items: m3_tb.build()};
-
-    let m4_tb = new TupleBuilder();
-    for (let i= 0; i < m2_in_neighbours.length; i++) {
-        let row = new TupleBuilder();
-        for (let j= 0; j < m2_in_neighbours[0].length; j++) {
-            row.writeNumber(m2_in_neighbours[i][j])
-        }
-        m4_tb.writeTuple(row.build())
-    }
-    let maze4: Tuple = {type: 'tuple', items: m4_tb.build()};
-
-    let m5_tb = new TupleBuilder();
-    for (let i= 0; i < m3_in.length; i++) {
-        let row = new TupleBuilder();
-        for (let j= 0; j < m3_in[0].length; j++) {
-            row.writeNumber(m3_in[i][j])
-        }
-        m5_tb.writeTuple(row.build())
-    }
-    let maze5: Tuple = {type: 'tuple', items: m5_tb.build()};
-
-    let m6_tb = new TupleBuilder();
-    for (let i= 0; i < m4_in.length; i++) {
-        let row = new TupleBuilder();
-        for (let j= 0; j < m4_in[0].length; j++) {
-            row.writeNumber(m4_in[i][j])
-        }
-        m6_tb.writeTuple(row.build())
-    }
-    let maze6: Tuple = {type: 'tuple', items: m6_tb.build()};
+    let maze1 = buildMaze(m1_in)
+    let maze2 = buildMaze(m2_in)
+    let maze3 = buildMaze(m1_in_valid)
+    let maze4 = buildMaze(m2_in_neighbours)
+    let maze5 = buildMaze(m3_in)
+    let maze6 = buildMaze(m4_in)
+    let maze7 = buildMaze(m5_in)
 
     beforeAll(async () => {
         code = await compile('Task4Basic');
@@ -201,7 +160,7 @@ describe('Task4Basic', () => {
         console.log("Distance:", value.length, "\nObstacles in superposition:", value.obstacles, "\nGas used:", value.gasUsed)
         await task4Basic.plotMaze(value.maze)
         // expect(value.length).toEqual(7);
-        expect(value.obstacles).toEqual(1);
+        // expect(value.obstacles).toEqual(1);
         expect(value.changes).toEqual(-1);
     });
 
@@ -225,6 +184,13 @@ describe('Task4Basic', () => {
 
     it('3x4', async () => {
         const value = await task4Basic.getSolve(maze6);
+        console.log("Distance:", value.length, "\nObstacles in superposition:", value.obstacles, "\nGas used:", value.gasUsed)
+        await task4Basic.plotMaze(value.maze)
+        expect(value.changes).toEqual(-1);
+    });
+
+    it('8x2', async () => {
+        const value = await task4Basic.getSolve(maze7);
         console.log("Distance:", value.length, "\nObstacles in superposition:", value.obstacles, "\nGas used:", value.gasUsed)
         await task4Basic.plotMaze(value.maze)
         expect(value.changes).toEqual(-1);

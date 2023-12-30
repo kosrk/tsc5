@@ -27,6 +27,18 @@ const map: { [id: number]: string; } = {
     [33]: '!'
 };
 
+export function buildMaze(maze: number[][]) :Tuple {
+    let m_tb = new TupleBuilder();
+    for (let i= 0; i < maze.length; i++) {
+        let row = new TupleBuilder();
+        for (let j= 0; j < maze[0].length; j++) {
+            row.writeNumber(maze[i][j])
+        }
+        m_tb.writeTuple(row.build())
+    }
+    return {type: 'tuple', items: m_tb.build()};
+}
+
 export class Task4Basic implements Contract {
     constructor(readonly address: Address, readonly init?: { code: Cell; data: Cell }) {}
 
