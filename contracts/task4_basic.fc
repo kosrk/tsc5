@@ -172,7 +172,11 @@ tuple write_path_symbol(tuple in_tup, int n, int m, int in_i, int in_j) inline {
 
 (int, int, int, tuple) solve(int n, int m, tuple maze) method_id {
 
-    throw_if(100, (n < 2) | (m < 2) | (n > 8) | (m > 8));
+;;     throw_if(100, (n < 2) | (m < 2) | (n > 8) | (m > 8));
+    if ((n < 2) | (m < 2) | (n > 8) | (m > 8)) {
+        return (-1, 0, 0, null());
+    }
+
     ;; INIT
     var l_map = empty_tuple();
     var start_i = 0;
