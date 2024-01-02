@@ -100,6 +100,17 @@ describe('Task4Basic', () => {
         [e,x], // E X
     ];
 
+    let m6_in: number[][] = [
+        [d,d,d,d,d,d,d,d],
+        [d,q,q,q,q,q,q,d],
+        [d,q,d,d,d,d,q,d],
+        [d,q,e,q,q,d,q,d],
+        [d,q,q,q,q,d,q,d],
+        [d,d,d,d,d,d,q,d],
+        [q,q,q,q,q,q,q,d],
+        [s,d,d,d,d,d,d,d],
+    ];
+
     let maze1 = buildMaze(m1_in)
     let maze2 = buildMaze(m2_in)
     let maze3 = buildMaze(m1_in_valid)
@@ -107,6 +118,7 @@ describe('Task4Basic', () => {
     let maze5 = buildMaze(m3_in)
     let maze6 = buildMaze(m4_in)
     let maze7 = buildMaze(m5_in)
+    let maze8 = buildMaze(m6_in)
 
     beforeAll(async () => {
         code = await compile('Task4Basic');
@@ -117,6 +129,7 @@ describe('Task4Basic', () => {
 
     beforeEach(async () => {
         blockchain = await Blockchain.create();
+
 
         task4Basic = blockchain.openContract(Task4Basic.createFromConfig({}, code));
 
@@ -193,6 +206,15 @@ describe('Task4Basic', () => {
         const value = await task4Basic.getSolve(maze7);
         console.log("Distance:", value.length, "\nObstacles in superposition:", value.obstacles, "\nGas used:", value.gasUsed)
         await task4Basic.plotMaze(value.maze)
+        expect(value.changes).toEqual(-1);
+    });
+
+    it('Maze 6', async () => {
+        const value = await task4Basic.getSolve(maze8);
+        console.log("Distance:", value.length, "\nObstacles in superposition:", value.obstacles, "\nGas used:", value.gasUsed)
+        await task4Basic.plotMaze(value.maze)
+        // expect(value.length).toEqual(7);
+        // expect(value.obstacles).toEqual(1);
         expect(value.changes).toEqual(-1);
     });
 

@@ -134,14 +134,15 @@ tuple write_path_symbol(tuple in_tup, int n, int m, int in_i, int in_j) inline {
         var cur_i = cur.at(0);
         var cur_j = cur.at(1);
         var prob = lmap.at(cur_i).at(cur_j).at(1);
-        (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i + 1, cur_j + 1, step, prob);
-        (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i + 1, cur_j - 1, step, prob);
-        (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i - 1, cur_j + 1, step, prob);
-        (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i - 1, cur_j - 1, step, prob);
-        (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i, cur_j - 1, step, prob);
-        (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i + 1, cur_j, step, prob);
-        (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i, cur_j + 1, step, prob);
-        (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i - 1, cur_j, step, prob);
+        var len = lmap.at(cur_i).at(cur_j).at(0) + 1;
+        (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i + 1, cur_j + 1, len, prob);
+        (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i + 1, cur_j - 1, len, prob);
+        (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i - 1, cur_j + 1, len, prob);
+        (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i - 1, cur_j - 1, len, prob);
+        (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i, cur_j - 1, len, prob);
+        (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i + 1, cur_j, len, prob);
+        (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i, cur_j + 1, len, prob);
+        (lmap, new_wave, priority_cells) = check_for(maze, lmap, new_wave, priority_cells, m, n, cur_i - 1, cur_j, len, prob);
         while (~ priority_cells.is_null()) { ;; Push dot cell to head ;; TODO: try cons
             var pc = priority_cells~pop_back();
             new_wave~push_back(pc);
