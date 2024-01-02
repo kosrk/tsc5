@@ -183,7 +183,7 @@ tuple write_path_symbol(tuple in_tup, int n, int m, int in_i, int in_j) inline {
             wall_queue~push_back(pc1);
         }
 
-        wall_queue = sort_by_prob(wall_queue); ;; TODO: try to remove
+;;         wall_queue = sort_by_prob(wall_queue); ;; TODO: try to remove
         ;;         new_wave~dump();
         ;;         var nn = new_wave~pop_back();
         ;;         nn~dump();
