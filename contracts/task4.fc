@@ -283,7 +283,7 @@ tuple write_path_symbol(tuple in_tup, int n, int m, int in_i, int in_j) inline {
     var solved_maze = maze;
     solved_maze = write_path_symbol(solved_maze, n, m, cur_i, cur_j);
 
-    repeat (1000) {
+    repeat (10000) {
         (cur_i, cur_j, int cur_prob, int cur_path, int cur_wall) = back(l_map, n, m, cur_i, cur_j);
         if cur_path == 0 {
             return (walls, prob, path + 1, solved_maze);
