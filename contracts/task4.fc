@@ -157,9 +157,9 @@ tuple forward(int n, int m, int end_i, int end_j, tuple dot_queue, tuple maze, t
 ;;                 wall_queue = sort_by_prob(wall_queue);
 
             }
-            if (end == -1) {
-                return lmap;
-            }
+;;             if (end == -1) {
+;;                 return lmap;
+;;             }
             if ~ prob_queue.is_null() {
                 var cur = prob_queue~pop_back();
                 (lmap, wall_queue, prob_queue, dot_queue, end) = step_forward(maze, lmap, wall_queue, prob_queue, dot_queue, m, n, cur);
@@ -168,9 +168,9 @@ tuple forward(int n, int m, int end_i, int end_j, tuple dot_queue, tuple maze, t
 ;;                 wall_queue = sort_by_prob(wall_queue);
             }
         } until (prob_queue.is_null() & dot_queue.is_null());
-        if (end == -1) {
-            return lmap;
-        }
+;;         if (end == -1) {
+;;             return lmap;
+;;         }
         if ~ wall_queue.is_null() {
             var cur = wall_queue~pop_back();
             (lmap, wall_queue, prob_queue, dot_queue, end) = step_forward(maze, lmap, wall_queue, prob_queue, dot_queue, m, n, cur);
@@ -249,7 +249,7 @@ tuple forward(int n, int m, int end_i, int end_j, tuple dot_queue, tuple maze, t
 
     ;; Forward trace
     l_map = forward(n, m, end_i, end_j, init_queue, maze, l_map);
-    l_map~dump();
+;;     l_map~dump();
 
     ;; Back trace
     var cur_i = end_i;
