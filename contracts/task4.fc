@@ -151,8 +151,8 @@ tuple forward(int n, int m, int end_i, int end_j, tuple dot_queue, tuple maze, t
                 var cur = dot_queue~pop_back();
                 (lmap, wall_queue, prob_queue, dot_queue, end) = step_forward(maze, lmap, wall_queue, prob_queue, dot_queue, m, n, cur);
                 dot_queue = sort_by_prob(dot_queue);
-                prob_queue = sort_by_prob(prob_queue);
-                wall_queue = sort_by_prob(wall_queue);
+;;                 prob_queue = sort_by_prob(prob_queue);
+;;                 wall_queue = sort_by_prob(wall_queue);
                 if (end == -1) {
                     return lmap;
                 }
@@ -160,19 +160,19 @@ tuple forward(int n, int m, int end_i, int end_j, tuple dot_queue, tuple maze, t
             if ~ prob_queue.is_null() {
                 var cur = prob_queue~pop_back();
                 (lmap, wall_queue, prob_queue, dot_queue, end) = step_forward(maze, lmap, wall_queue, prob_queue, dot_queue, m, n, cur);
-                dot_queue = sort_by_prob(dot_queue);
+;;                 dot_queue = sort_by_prob(dot_queue);
                 prob_queue = sort_by_prob(prob_queue);
-                wall_queue = sort_by_prob(wall_queue);
+;;                 wall_queue = sort_by_prob(wall_queue);
+                if (end == -1) {
+                    return lmap;
+                }
             }
         } until (prob_queue.is_null() & dot_queue.is_null());
-        if (end == -1) {
-            return lmap;
-        }
         if ~ wall_queue.is_null() {
             var cur = wall_queue~pop_back();
             (lmap, wall_queue, prob_queue, dot_queue, end) = step_forward(maze, lmap, wall_queue, prob_queue, dot_queue, m, n, cur);
-            dot_queue = sort_by_prob(dot_queue);
-            prob_queue = sort_by_prob(prob_queue);
+;;             dot_queue = sort_by_prob(dot_queue);
+;;             prob_queue = sort_by_prob(prob_queue);
             wall_queue = sort_by_prob(wall_queue);
         }
     } until (prob_queue.is_null() & dot_queue.is_null() & wall_queue.is_null());
