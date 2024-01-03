@@ -260,7 +260,7 @@ tuple forward(int n, int m, int end_i, int end_j, tuple dot_queue, tuple maze, t
 
     var walls = w / wall_w;
     var prob = (w - walls * wall_w) / prob_w;
-    var path = w - walls * wall_w - prob * prob_w;
+    var path = w - walls * wall_w - prob * prob_w + 1;
 
     var solved_maze = maze;
     solved_maze = write_path_symbol(solved_maze, n, m, cur_i, cur_j);
