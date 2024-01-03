@@ -122,7 +122,7 @@ tuple write_path_symbol(tuple in_tup, int n, int m, int in_i, int in_j) inline {
     return (lmap, wall_queue, prob_queue, dot_queue);
 }
 
-(tuple, tuple, tuple, tuple) step_forward(tuple maze, tuple lmap, tuple wall_queue, tuple prob_queue, tuple dot_queue, int m, int n, tuple cur) {
+(tuple, tuple, tuple, tuple) step_forward(tuple maze, tuple lmap, tuple wall_queue, tuple prob_queue, tuple dot_queue, int m, int n, tuple cur) inline {
     var cur_i = cur.at(0);
     var cur_j = cur.at(1);
     var w = lmap.at(cur_i).at(cur_j) + step_w;
@@ -147,24 +147,24 @@ tuple forward(int n, int m, int end_i, int end_j, tuple dot_queue, tuple maze, t
                 (lmap, wall_queue, prob_queue, dot_queue) = step_forward(maze, lmap, wall_queue, prob_queue, dot_queue, m, n, cur);
 ;;                 lmap~dump();
 ;;                     dot_queue~dump();
-                dot_queue = sort_by_prob(dot_queue);
-                prob_queue = sort_by_prob(prob_queue);
-                wall_queue = sort_by_prob(wall_queue);
+;;                 dot_queue = sort_by_prob(dot_queue);
+;;                 prob_queue = sort_by_prob(prob_queue);
+;;                 wall_queue = sort_by_prob(wall_queue);
             }
             if ~ prob_queue.is_null() {
                 var cur = prob_queue~pop_back();
                 (lmap, wall_queue, prob_queue, dot_queue) = step_forward(maze, lmap, wall_queue, prob_queue, dot_queue, m, n, cur);
-                dot_queue = sort_by_prob(dot_queue);
-                prob_queue = sort_by_prob(prob_queue);
-                wall_queue = sort_by_prob(wall_queue);
+;;                 dot_queue = sort_by_prob(dot_queue);
+;;                 prob_queue = sort_by_prob(prob_queue);
+;;                 wall_queue = sort_by_prob(wall_queue);
             }
         } until (prob_queue.is_null() & dot_queue.is_null());
         if ~ wall_queue.is_null() {
             var cur = wall_queue~pop_back();
             (lmap, wall_queue, prob_queue, dot_queue) = step_forward(maze, lmap, wall_queue, prob_queue, dot_queue, m, n, cur);
-            dot_queue = sort_by_prob(dot_queue);
-            prob_queue = sort_by_prob(prob_queue);
-            wall_queue = sort_by_prob(wall_queue);
+;;             dot_queue = sort_by_prob(dot_queue);
+;;             prob_queue = sort_by_prob(prob_queue);
+;;             wall_queue = sort_by_prob(wall_queue);
         }
     } until (prob_queue.is_null() & dot_queue.is_null() & wall_queue.is_null());
 
