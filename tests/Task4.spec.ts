@@ -111,6 +111,40 @@ describe('Task4', () => {
         [s,d,d,d,d,d,d,d],
     ];
 
+    let m7_in: number[][] = [
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,e],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+        [s,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d,d],
+    ];
+
     let maze1 = buildMaze(m1_in)
     let maze2 = buildMaze(m2_in)
     let maze3 = buildMaze(m1_in_valid)
@@ -119,6 +153,7 @@ describe('Task4', () => {
     let maze6 = buildMaze(m4_in)
     let maze7 = buildMaze(m5_in)
     let maze8 = buildMaze(m6_in)
+    let maze9 = buildMaze(m7_in)
 
     beforeAll(async () => {
         code = await compile('Task4');
@@ -154,10 +189,9 @@ describe('Task4', () => {
         const value = await task4.getSolve(maze1);
         console.log("Distance:", value.length, "\nObstacles in superposition:", value.obstacles, "\nWalls:", value.changes, "\nGas used:", value.gasUsed)
         await task4.plotMaze(value.maze)
-        // expect(value.length).toEqual(0);
-        // expect(value.obstacles).toEqual(0);
+        expect(value.length).toEqual(15);
+        expect(value.obstacles).toEqual(1);
         expect(value.changes).toEqual(1);
-        // expect(value.maze).toEqual(null);
     });
 
     it('Maze 2', async () => {
@@ -166,48 +200,48 @@ describe('Task4', () => {
         await task4.plotMaze(value.maze)
         expect(value.length).toEqual(7);
         expect(value.obstacles).toEqual(1);
-        expect(value.changes).toEqual(-1);
+        expect(value.changes).toEqual(0);
     });
 
     it('Valid maze 1', async () => {
         const value = await task4.getSolve(maze3);
         console.log("Distance:", value.length, "\nObstacles in superposition:", value.obstacles, "\nGas used:", value.gasUsed)
         await task4.plotMaze(value.maze)
-        // expect(value.length).toEqual(7);
-        // expect(value.obstacles).toEqual(1);
-        expect(value.changes).toEqual(-1);
+        expect(value.length).toEqual(15);
+        expect(value.obstacles).toEqual(1);
+        expect(value.changes).toEqual(0);
     });
 
     it('Neighbours', async () => {
         const value = await task4.getSolve(maze4);
         console.log("Distance:", value.length, "\nObstacles in superposition:", value.obstacles, "\nGas used:", value.gasUsed)
         await task4.plotMaze(value.maze)
-        // expect(value.length).toEqual(7);
-        // expect(value.obstacles).toEqual(1);
-        expect(value.changes).toEqual(-1);
+        expect(value.length).toEqual(1);
+        expect(value.obstacles).toEqual(0);
+        expect(value.changes).toEqual(0);
     });
 
     it('2x2', async () => {
         const value = await task4.getSolve(maze5);
         console.log("Distance:", value.length, "\nObstacles in superposition:", value.obstacles, "\nGas used:", value.gasUsed)
         await task4.plotMaze(value.maze)
-        // expect(value.length).toEqual(7);
-        // expect(value.obstacles).toEqual(1);
-        expect(value.changes).toEqual(-1);
+        expect(value.length).toEqual(1);
+        expect(value.obstacles).toEqual(0);
+        expect(value.changes).toEqual(0);
     });
 
     it('3x4', async () => {
         const value = await task4.getSolve(maze6);
         console.log("Distance:", value.length, "\nObstacles in superposition:", value.obstacles, "\nGas used:", value.gasUsed)
         await task4.plotMaze(value.maze)
-        expect(value.changes).toEqual(-1);
+        expect(value.changes).toEqual(1);
     });
 
     it('8x2', async () => {
         const value = await task4.getSolve(maze7);
         console.log("Distance:", value.length, "\nObstacles in superposition:", value.obstacles, "\nGas used:", value.gasUsed)
         await task4.plotMaze(value.maze)
-        expect(value.changes).toEqual(-1);
+        expect(value.changes).toEqual(0);
     });
 
     it('Maze 6', async () => {
@@ -216,7 +250,17 @@ describe('Task4', () => {
         await task4.plotMaze(value.maze)
         // expect(value.length).toEqual(7);
         // expect(value.obstacles).toEqual(1);
-        expect(value.changes).toEqual(-1);
+        expect(value.changes).toEqual(0);
+    });
+
+    it('Maze 31x31', async () => {
+        const value = await task4.getSolve(maze9);
+        console.log("Distance:", value.length, "\nObstacles in superposition:", value.obstacles, "\nWalls:", value.changes, "\nGas used:", value.gasUsed)
+        await task4.plotMaze(value.maze)
+        // expect(value.length).toEqual(0);
+        // expect(value.obstacles).toEqual(0);
+        // expect(value.changes).toEqual(1);
+        // expect(value.maze).toEqual(null);
     });
 
 });
