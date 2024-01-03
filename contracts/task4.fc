@@ -5,6 +5,7 @@ forall X -> tuple ut(X x) asm "NOP";
 forall X -> int is_null (X x) asm "ISNULL";
 forall X -> (tuple, ()) push_back (tuple tail, X head) asm "CONS";
 forall X -> (tuple, (X)) pop_back (tuple t) asm "UNCONS";
+forall X -> (tuple, ()) tset(tuple t, int idx, X x) asm(t x idx) "SETINDEXVAR";
 
 const int x = 88; ;; X
 const int d = 46; ;; .
@@ -22,10 +23,7 @@ const int max_w = 1000000000;
     return();
 }
 
-tuple sort_by_prob(tuple stack) inline {
-    ;;     if (~ stack.is_null()) {
-    ;;         stack~dump();
-    ;;     }
+tuple sort_by_prob(tuple stack) {
     var temp = null();
     var last = ut([0, 0, max_w]);
     while (~ stack.is_null()) {
@@ -36,31 +34,14 @@ tuple sort_by_prob(tuple stack) inline {
         temp~push_back(cur);
         last = cur;
     }
-    ;;     if (~ temp.is_null()) {
-    ;;     temp~dump();
-    ;;     }
     return temp;
 }
 
 tuple write_at(tuple in_tup, int n, int m, int in_i, int in_j, int val) inline {
-    var i = 0;
-    var j = 0;
-    var res = empty_tuple();
-    repeat (n) {
-        var row = empty_tuple();
-        repeat (m) {
-            if (i == in_i) & (j == in_j) {
-                row~tpush(val);
-            } else {
-                row~tpush(in_tup.at(i).at(j));
-            }
-            j = j + 1;
-        }
-        j = 0;
-        i = i + 1;
-        res~tpush(row);
-    }
-    return res;
+    var row = in_tup.at(in_i);
+    row~tset(in_j, val);
+    in_tup~tset(in_i, row);
+    return in_tup;
 }
 
 tuple write_path_symbol(tuple in_tup, int n, int m, int in_i, int in_j) inline {
@@ -149,6 +130,7 @@ tuple forward(int n, int m, int end_i, int end_j, tuple queue, tuple maze, tuple
                     return lmap;
                 }
                 queue = sort_by_prob(queue);
+;;                 lmap~dump();
             }
     return lmap;
 }
