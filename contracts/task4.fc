@@ -94,89 +94,62 @@ tuple write_path_symbol(tuple in_tup, int n, int m, int in_i, int in_j) inline {
     return (old_i, old_j, old_w);
 }
 
-(tuple, tuple, tuple, tuple, int) check_for(tuple maze, tuple lmap, tuple wall_queue, tuple prob_queue, tuple dot_queue, int m, int n, int i, int j, int w, int end) inline {
+(tuple, tuple, int) check_for(tuple maze, tuple lmap, tuple queue, int m, int n, int i, int j, int w, int end) inline {
     if (i >= 0) & (i < n) & (j >= 0) & (j < m) {
         var symb = maze.at(i).at(j);
         if symb == e {
-            return (lmap, wall_queue, prob_queue, dot_queue, -1);
+            return (lmap, queue, -1);
         }
         if symb == d {
             if lmap.at(i).at(j) == -1 {
-                dot_queue~push_back(ut([i, j, w])); ;; dot cells must be extracted first
+                queue~push_back(ut([i, j, w])); ;; dot cells must be extracted first
                 lmap = lmap.write_at(n, m, i, j, w);
             }
         }
         if symb == q {
             var new_w = w + prob_w;
             if lmap.at(i).at(j) == -1 {
-                prob_queue~push_back(ut([i, j, new_w])); ;; dot cells must be extracted first
+                queue~push_back(ut([i, j, new_w])); ;; dot cells must be extracted first
                 lmap = lmap.write_at(n, m, i, j, new_w);
             }
         }
         if symb == x {
             var new_w = w + wall_w;
             if lmap.at(i).at(j) == -1 {
-;;                 new_w~dump();
-                wall_queue~push_back(ut([i, j, new_w])); ;; dot cells must be extracted first
+                queue~push_back(ut([i, j, new_w])); ;; dot cells must be extracted first
                 lmap = lmap.write_at(n, m, i, j, new_w);
             }
         }
     }
-    return (lmap, wall_queue, prob_queue, dot_queue, end);
+    return (lmap, queue, end);
 }
 
-(tuple, tuple, tuple, tuple, int) step_forward(tuple maze, tuple lmap, tuple wall_queue, tuple prob_queue, tuple dot_queue, int m, int n, tuple cur) inline {
+(tuple, tuple, int) step_forward(tuple maze, tuple lmap, queue, int m, int n, tuple cur) inline {
     var cur_i = cur.at(0);
     var cur_j = cur.at(1);
     var end = 0;
     var w = lmap.at(cur_i).at(cur_j) + step_w;
-    (lmap, wall_queue, prob_queue, dot_queue, end) = check_for(maze, lmap, wall_queue, prob_queue, dot_queue, m, n, cur_i, cur_j - 1, w, end);
-    (lmap, wall_queue, prob_queue, dot_queue, end) = check_for(maze, lmap, wall_queue, prob_queue, dot_queue, m, n, cur_i + 1, cur_j, w, end);
-    (lmap, wall_queue, prob_queue, dot_queue, end) = check_for(maze, lmap, wall_queue, prob_queue, dot_queue, m, n, cur_i, cur_j + 1, w, end);
-    (lmap, wall_queue, prob_queue, dot_queue, end) = check_for(maze, lmap, wall_queue, prob_queue, dot_queue, m, n, cur_i - 1, cur_j, w, end);
-    (lmap, wall_queue, prob_queue, dot_queue, end) = check_for(maze, lmap, wall_queue, prob_queue, dot_queue, m, n, cur_i + 1, cur_j + 1, w, end);
-    (lmap, wall_queue, prob_queue, dot_queue, end) = check_for(maze, lmap, wall_queue, prob_queue, dot_queue, m, n, cur_i + 1, cur_j - 1, w, end);
-    (lmap, wall_queue, prob_queue, dot_queue, end) = check_for(maze, lmap, wall_queue, prob_queue, dot_queue, m, n, cur_i - 1, cur_j + 1, w, end);
-    (lmap, wall_queue, prob_queue, dot_queue, end) = check_for(maze, lmap, wall_queue, prob_queue, dot_queue, m, n, cur_i - 1, cur_j - 1, w, end);
-    return (lmap, wall_queue, prob_queue, dot_queue, end);
+    (lmap, queue, end) = check_for(maze, lmap, queue, m, n, cur_i, cur_j - 1, w, end);
+    (lmap, queue, end) = check_for(maze, lmap, queue, m, n, cur_i + 1, cur_j, w, end);
+    (lmap, queue, end) = check_for(maze, lmap, queue, m, n, cur_i, cur_j + 1, w, end);
+    (lmap, queue, end) = check_for(maze, lmap, queue, m, n, cur_i - 1, cur_j, w, end);
+    (lmap, queue, end) = check_for(maze, lmap, queue, m, n, cur_i + 1, cur_j + 1, w, end);
+    (lmap, queue, end) = check_for(maze, lmap, queue, m, n, cur_i + 1, cur_j - 1, w, end);
+    (lmap, queue, end) = check_for(maze, lmap, queue, m, n, cur_i - 1, cur_j + 1, w, end);
+    (lmap, queue, end) = check_for(maze, lmap, queue, m, n, cur_i - 1, cur_j - 1, w, end);
+    return (lmap, queue, end);
 }
 
-tuple forward(int n, int m, int end_i, int end_j, tuple dot_queue, tuple maze, tuple lmap) inline {
-    tuple prob_queue = null();
-    tuple wall_queue = null();
+tuple forward(int n, int m, int end_i, int end_j, tuple queue, tuple maze, tuple lmap) inline {
     int end = 0;
-    do {
-        do {
-            while (~ dot_queue.is_null()) {
-                var cur = dot_queue~pop_back();
-                (lmap, wall_queue, prob_queue, dot_queue, end) = step_forward(maze, lmap, wall_queue, prob_queue, dot_queue, m, n, cur);
-                dot_queue = sort_by_prob(dot_queue);
-;;                 prob_queue = sort_by_prob(prob_queue);
-;;                 wall_queue = sort_by_prob(wall_queue);
+            while (~ queue.is_null()) {
+                var cur = queue~pop_back();
+                (lmap, queue, end) = step_forward(maze, lmap, queue, m, n, cur);
                 if (end == -1) {
                     return lmap;
                 }
+                queue = sort_by_prob(queue);
             }
-            if ~ prob_queue.is_null() {
-                var cur = prob_queue~pop_back();
-                (lmap, wall_queue, prob_queue, dot_queue, end) = step_forward(maze, lmap, wall_queue, prob_queue, dot_queue, m, n, cur);
-;;                 dot_queue = sort_by_prob(dot_queue);
-                prob_queue = sort_by_prob(prob_queue);
-;;                 wall_queue = sort_by_prob(wall_queue);
-                if (end == -1) {
-                    return lmap;
-                }
-            }
-        } until (prob_queue.is_null() & dot_queue.is_null());
-        if ~ wall_queue.is_null() {
-            var cur = wall_queue~pop_back();
-            (lmap, wall_queue, prob_queue, dot_queue, end) = step_forward(maze, lmap, wall_queue, prob_queue, dot_queue, m, n, cur);
-;;             dot_queue = sort_by_prob(dot_queue);
-;;             prob_queue = sort_by_prob(prob_queue);
-            wall_queue = sort_by_prob(wall_queue);
-        }
-    } until (prob_queue.is_null() & dot_queue.is_null() & wall_queue.is_null());
-
     return lmap;
 }
 
