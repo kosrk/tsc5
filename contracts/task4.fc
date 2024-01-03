@@ -148,11 +148,11 @@ tuple forward(int n, int m, int end_i, int end_j, tuple dot_queue, tuple maze, t
     do {
         do {
             while (~ dot_queue.is_null()) {
+                dot_queue = sort_by_prob(dot_queue);
                 var cur = dot_queue~pop_back();
                 (lmap, wall_queue, prob_queue, dot_queue, end) = step_forward(maze, lmap, wall_queue, prob_queue, dot_queue, m, n, cur);
 ;;                 lmap~dump();
 ;;                     dot_queue~dump();
-;;                 dot_queue = sort_by_prob(dot_queue);
 ;;                 prob_queue = sort_by_prob(prob_queue);
 ;;                 wall_queue = sort_by_prob(wall_queue);
 
@@ -161,10 +161,10 @@ tuple forward(int n, int m, int end_i, int end_j, tuple dot_queue, tuple maze, t
                 return lmap;
             }
             if ~ prob_queue.is_null() {
+                prob_queue = sort_by_prob(prob_queue);
                 var cur = prob_queue~pop_back();
                 (lmap, wall_queue, prob_queue, dot_queue, end) = step_forward(maze, lmap, wall_queue, prob_queue, dot_queue, m, n, cur);
 ;;                 dot_queue = sort_by_prob(dot_queue);
-;;                 prob_queue = sort_by_prob(prob_queue);
 ;;                 wall_queue = sort_by_prob(wall_queue);
             }
         } until (prob_queue.is_null() & dot_queue.is_null());
@@ -172,11 +172,11 @@ tuple forward(int n, int m, int end_i, int end_j, tuple dot_queue, tuple maze, t
             return lmap;
         }
         if ~ wall_queue.is_null() {
+            wall_queue = sort_by_prob(wall_queue);
             var cur = wall_queue~pop_back();
             (lmap, wall_queue, prob_queue, dot_queue, end) = step_forward(maze, lmap, wall_queue, prob_queue, dot_queue, m, n, cur);
 ;;             dot_queue = sort_by_prob(dot_queue);
 ;;             prob_queue = sort_by_prob(prob_queue);
-;;             wall_queue = sort_by_prob(wall_queue);
         }
     } until (prob_queue.is_null() & dot_queue.is_null() & wall_queue.is_null());
 
