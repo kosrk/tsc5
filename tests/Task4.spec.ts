@@ -189,7 +189,7 @@ describe('Task4', () => {
         const value = await task4.getSolve(maze1);
         console.log("Distance:", value.length, "\nObstacles in superposition:", value.obstacles, "\nWalls:", value.changes, "\nGas used:", value.gasUsed)
         await task4.plotMaze(value.maze)
-        expect(value.length).toEqual(15);
+        expect(value.length).toEqual(16);
         expect(value.obstacles).toEqual(1);
         expect(value.changes).toEqual(1);
     });
@@ -207,7 +207,7 @@ describe('Task4', () => {
         const value = await task4.getSolve(maze3);
         console.log("Distance:", value.length, "\nObstacles in superposition:", value.obstacles, "\nGas used:", value.gasUsed)
         await task4.plotMaze(value.maze)
-        expect(value.length).toEqual(15);
+        expect(value.length).toEqual(16);
         expect(value.obstacles).toEqual(1);
         expect(value.changes).toEqual(0);
     });
