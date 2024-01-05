@@ -70,10 +70,6 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
 () check_for(int i, int j, int w) impure inline {
     if (i >= 0) & (i < g_n) & (j >= 0) & (j < g_m) {
         var symb = g_maze.at(i).at(j);
-        if symb == e {
-            end = -1;
-            return ();
-        }
         if symb == d {
             if lmap.at(i).at(j) == -1 {
                 d_queue~push_back(ut([i, j, w])); ;; dot cells must be extracted first
@@ -87,6 +83,10 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
                 p_queue~push_back(ut([i, j, new_w])); ;; dot cells must be extracted first
                 lmap = lmap.write_at(i, j, new_w);
             }
+            return ();
+        }
+        if symb == e {
+            end = -1;
             return ();
         }
         if symb == x {
