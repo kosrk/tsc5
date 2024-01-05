@@ -77,6 +77,7 @@ int parse_sender_address (cell in_msg_full) inline {
         (int total_share, int count) = (ds~load_uint(64), ds~load_uint(16));
 
         (int user, int share) = (in_msg_body~load_uint(256), in_msg_body~load_uint(32));
+        user~dump();
 
         total_share += share;
         count += 1;
@@ -145,12 +146,11 @@ int parse_sender_address (cell in_msg_full) inline {
 
         (int total_share, int count) = (ds~load_uint(64), ds~load_uint(16));
 
-        int f = -1;
+        int precalc = msg_value / total_share;
+        (int user, slice cs, _) = dict.udict_get_next?(256, -1);
 
         repeat count {
-            (int user, slice cs, f) = dict.udict_get_next?(256, f);
-            int part = cs.preload_uint(32) * msg_value / total_share; ;; TODO: precalc mag_value / total_share
-
+            int part = cs~load_uint(32) * precalc;
             send_raw_message(begin_cell()
                     .store_uint(33792, 6 + 11)
 ;;                     .store_uint(0x10, 6) ;; nobounce - int_msg_info$0 ihr_disabled:Bool bounce:Bool bounced:Bool src:MsgAddress -> 010000
@@ -159,6 +159,7 @@ int parse_sender_address (cell in_msg_full) inline {
                     .store_coins(part)
                     .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1)
                     .end_cell(), 1);
+            (user, cs, _) = dict.udict_get_next?(256, user);
         };
         return();
     }
