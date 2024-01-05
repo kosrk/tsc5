@@ -62,9 +62,11 @@ int parse_sender_address (cell in_msg_full) inline {
         in_msg_body~skip_bits(64 + 11); ;; query_id and addr prefix
         var dict = ds~load_dict();
 
-;;         if ds.slice_bits() >= 64 + 16 { ;; TODO: try to check once
-        (int total_share, int count) = (ds~load_uint(64), ds~load_uint(16));
-;;         }
+        int total_share = 0;
+        int count = 0;
+        if ds.slice_bits() >= 64 + 16 { ;; TODO: try to check once
+            (total_share, count) = (ds~load_uint(64), ds~load_uint(16));
+        }
 
         var (user, share) = (in_msg_body~load_uint(256), in_msg_body~load_uint(32));
 
