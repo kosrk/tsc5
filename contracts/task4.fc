@@ -24,55 +24,11 @@ const int max_w = 1000000000;
     return();
 }
 
-int getlen(tuple tup) inline {
-    var i = 0;
-    while (~ tup.is_null()) {
-        tup~pop_back();
-        i = i + 1;
-    }
-    return i;
-}
-
-tuple sort_by_prob(tuple stack) {
-    var temp = null();
-    var last = ut([0, 0, max_w]);
-    while (~ stack.is_null()) {
-        var cur = stack~pop_back();
-        while (~ temp.is_null()) & (last.at(2) < cur.at(2)) {
-            stack~push_back(temp~pop_back());
-        }
-        temp~push_back(cur);
-        last = cur;
-    }
-    return temp;
-}
-
 tuple write_at(tuple in_tup, int n, int m, int in_i, int in_j, int val) inline {
     var row = in_tup.at(in_i);
     row~tset(in_j, val);
     in_tup~tset(in_i, row);
     return in_tup;
-}
-
-tuple write_path_symbol(tuple in_tup, int n, int m, int in_i, int in_j) inline {
-    var i = 0;
-    var j = 0;
-    var res = empty_tuple();
-    repeat (n) {
-        var row = empty_tuple();
-        repeat (m) {
-            if (i == in_i) & (j == in_j) {
-                row~tpush(p);
-            } else {
-                row~tpush(in_tup.at(i).at(j));
-            }
-            j = j + 1;
-        }
-        j = 0;
-        i = i + 1;
-        res~tpush(row);
-    }
-    return res;
 }
 
 (int, int, int) get_path(tuple lmap, int n, int m, int old_i, int old_j, int i, int j, int old_w) inline {
@@ -215,8 +171,6 @@ tuple forward(int n, int m, int end_i, int end_j, tuple queue, tuple maze, tuple
                     }
                 }
             }
-;;                 queue = sort_by_prob(queue);
-;;             }
     return lmap;
 }
 
@@ -301,14 +255,14 @@ tuple forward(int n, int m, int end_i, int end_j, tuple queue, tuple maze, tuple
     var path = w - walls * wall_w - prob * prob_w + 1;
 
     var solved_maze = maze;
-    solved_maze = write_path_symbol(solved_maze, n, m, cur_i, cur_j);
+    solved_maze = write_at(solved_maze, n, m, cur_i, cur_j, p);
 
     repeat (1000) {
         (cur_i, cur_j, int cur_w) = back(l_map, n, m, cur_i, cur_j);
         if cur_w == 0 {
             return (walls, prob, path, solved_maze);
         }
-        solved_maze = write_path_symbol(solved_maze, n, m, cur_i, cur_j);
+        solved_maze = write_at(solved_maze, n, m, cur_i, cur_j, p);
     };
 
     return (-1, 0, 0, null());
