@@ -24,6 +24,10 @@ global int g_n;
 global int g_m;
 global tuple g_maze;
 global tuple lmap;
+global tuple d_queue;
+global tuple p_queue;
+global tuple w_queue;
+global int end;
 
 () recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
     return();
@@ -46,18 +50,19 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
     return (old_i, old_j, old_w);
 }
 
-(tuple, tuple, tuple, int) check_for(tuple d_queue, tuple p_queue, tuple w_queue, int i, int j, int w, int end) inline {
+() check_for(int i, int j, int w) impure inline {
     if (i >= 0) & (i < g_n) & (j >= 0) & (j < g_m) {
         var symb = g_maze.at(i).at(j);
         if symb == e {
-            return (d_queue, p_queue, w_queue, -1);
+            end = -1;
+            return ();
         }
         if symb == d {
             if lmap.at(i).at(j) == -1 {
                 d_queue~push_back(ut([i, j, w])); ;; dot cells must be extracted first
                 lmap = lmap.write_at(i, j, w);
             }
-            return (d_queue, p_queue, w_queue, end);
+            return ();
         }
         if symb == q {
             var new_w = w + prob_w;
@@ -65,7 +70,7 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
                 p_queue~push_back(ut([i, j, new_w])); ;; dot cells must be extracted first
                 lmap = lmap.write_at(i, j, new_w);
             }
-            return (d_queue, p_queue, w_queue, end);
+            return ();
         }
         if symb == x {
             var new_w = w + wall_w;
@@ -73,13 +78,13 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
                 w_queue~push_back(ut([i, j, new_w])); ;; dot cells must be extracted first
                 lmap = lmap.write_at(i, j, new_w);
             }
-            return (d_queue, p_queue, w_queue, end);
+            return ();
         }
     }
-    return (d_queue, p_queue, w_queue, end);
+    return ();
 }
 
-(tuple, int) step_forward(tuple queue, tuple batch) inline {
+(tuple) step_forward(tuple queue, tuple batch) inline {
 
     var d_queue = null();
     var p_queue = null();
@@ -91,14 +96,14 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
         var cur_i = cur.at(0);
         var cur_j = cur.at(1);
         var w = lmap.at(cur_i).at(cur_j) + step_w;
-        (d_queue, p_queue, w_queue, end) = check_for(d_queue, p_queue, w_queue, cur_i, cur_j - 1, w, end);
-        (d_queue, p_queue, w_queue, end) = check_for(d_queue, p_queue, w_queue, cur_i + 1, cur_j, w, end);
-        (d_queue, p_queue, w_queue, end) = check_for(d_queue, p_queue, w_queue, cur_i, cur_j + 1, w, end);
-        (d_queue, p_queue, w_queue, end) = check_for(d_queue, p_queue, w_queue, cur_i - 1, cur_j, w, end);
-        (d_queue, p_queue, w_queue, end) = check_for(d_queue, p_queue, w_queue, cur_i + 1, cur_j + 1, w, end);
-        (d_queue, p_queue, w_queue, end) = check_for(d_queue, p_queue, w_queue, cur_i + 1, cur_j - 1, w, end);
-        (d_queue, p_queue, w_queue, end) = check_for(d_queue, p_queue, w_queue, cur_i - 1, cur_j + 1, w, end);
-        (d_queue, p_queue, w_queue, end) = check_for(d_queue, p_queue, w_queue, cur_i - 1, cur_j - 1, w, end);
+        check_for(cur_i, cur_j - 1, w);
+        check_for(cur_i + 1, cur_j, w);
+        check_for(cur_i, cur_j + 1, w);
+        check_for(cur_i - 1, cur_j, w);
+        check_for(cur_i + 1, cur_j + 1, w);
+        check_for(cur_i + 1, cur_j - 1, w);
+        check_for(cur_i - 1, cur_j + 1, w);
+        check_for(cur_i - 1, cur_j - 1, w);
     }
 
     tuple dq = empty_tuple();
@@ -134,7 +139,7 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
 
     queue = ut([dq, pq, wq]);
 
-    return (queue, end);
+    return queue;
 }
 
 () forward(int end_i, int end_j, tuple queue) impure inline {
@@ -144,7 +149,7 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
                     var row = queue.at(0);
                     var batch = row~tpop();
                     queue~tset(0, row);
-                    (queue, end) = step_forward(queue, batch);
+                    queue = step_forward(queue, batch);
                     if (end == -1) {
                         return ();
                     }
@@ -153,7 +158,7 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
                         var row = queue.at(1);
                         var batch = row~tpop();
                         queue~tset(1, row);
-                        (queue, end) = step_forward(queue, batch);
+                        queue = step_forward(queue, batch);
                         if (end == -1) {
                             return ();
                         }
@@ -162,7 +167,7 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
                             var row = queue.at(2);
                             var batch = row~tpop();
                             queue~tset(2, row);
-                            (queue, end) = step_forward(queue, batch);
+                            queue = step_forward(queue, batch);
                             if (end == -1) {
                                 return ();
                             }
