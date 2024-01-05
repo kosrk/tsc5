@@ -89,7 +89,7 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
     var d_queue = null();
     var p_queue = null();
     var w_queue = null();
-    var end = 0;
+    end = 0;
 
     while (~ batch.is_null()) {
         var cur = batch~pop_back();
@@ -142,42 +142,35 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
     return queue;
 }
 
-() forward(int end_i, int end_j, tuple queue) impure inline {
-    int end = 0;
-            repeat 1000 {
-                if tlen(queue.at(0)) > 0 {
-                    var row = queue.at(0);
-                    var batch = row~tpop();
-                    queue~tset(0, row);
-                    queue = step_forward(queue, batch);
-                    if (end == -1) {
-                        return ();
-                    }
-                } else {
-                    if tlen(queue.at(1)) > 0 {
-                        var row = queue.at(1);
-                        var batch = row~tpop();
-                        queue~tset(1, row);
-                        queue = step_forward(queue, batch);
-                        if (end == -1) {
-                            return ();
-                        }
-                    } else {
-                        if tlen(queue.at(2)) > 0 {
-                            var row = queue.at(2);
-                            var batch = row~tpop();
-                            queue~tset(2, row);
-                            queue = step_forward(queue, batch);
-                            if (end == -1) {
-                                return ();
-                            }
-                        } else {
-                            return ();
-                        }
-                    }
-                }
-            }
-    return ();
+tuple forward(int end_i, int end_j, tuple queue) impure inline {
+;;     queue~dump();
+
+    if tlen(queue.at(0)) > 0 {
+        var row = queue.at(0);
+        var batch = row~tpop();
+        queue~tset(0, row);
+        queue = step_forward(queue, batch);
+        return queue;
+    }
+
+    if tlen(queue.at(1)) > 0 {
+        var row = queue.at(1);
+        var batch = row~tpop();
+        queue~tset(1, row);
+        queue = step_forward(queue, batch);
+        return queue;
+    }
+
+    if tlen(queue.at(2)) > 0 {
+        var row = queue.at(2);
+        var batch = row~tpop();
+        queue~tset(2, row);
+        queue = step_forward(queue, batch);
+        return queue;
+    }
+
+    end = -1;
+    return queue;
 }
 
 (int, int, int) back(int i, int j) inline {
@@ -245,14 +238,17 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
     tuple init_batch = null();
     init_batch~push_back(ut([start_i, start_j, 0]));
 
-    tuple init_queue = ut([
+    tuple queue = ut([
             ut([init_batch]),              ;; dot queue
             empty_tuple(),                 ;; prob queue
             empty_tuple()                  ;; wall queue
     ]);
 
     ;; Forward trace
-    forward(end_i, end_j, init_queue);
+    end = 0;
+    do {
+        queue = forward(end_i, end_j, queue);
+    } until (end == -1);
 
     ;; Back trace
     var cur_i = end_i;
