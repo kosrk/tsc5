@@ -52,6 +52,7 @@ tuple write_at(tuple in_tup, int n, int m, int in_i, int in_j, int val) inline {
                 d_queue~push_back(ut([i, j, w])); ;; dot cells must be extracted first
                 lmap = lmap.write_at(n, m, i, j, w);
             }
+            return (lmap, d_queue, p_queue, w_queue, end);
         }
         if symb == q {
             var new_w = w + prob_w;
@@ -59,6 +60,7 @@ tuple write_at(tuple in_tup, int n, int m, int in_i, int in_j, int val) inline {
                 p_queue~push_back(ut([i, j, new_w])); ;; dot cells must be extracted first
                 lmap = lmap.write_at(n, m, i, j, new_w);
             }
+            return (lmap, d_queue, p_queue, w_queue, end);
         }
         if symb == x {
             var new_w = w + wall_w;
@@ -66,6 +68,7 @@ tuple write_at(tuple in_tup, int n, int m, int in_i, int in_j, int val) inline {
                 w_queue~push_back(ut([i, j, new_w])); ;; dot cells must be extracted first
                 lmap = lmap.write_at(n, m, i, j, new_w);
             }
+            return (lmap, d_queue, p_queue, w_queue, end);
         }
     }
     return (lmap, d_queue, p_queue, w_queue, end);
