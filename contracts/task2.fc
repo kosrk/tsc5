@@ -77,15 +77,14 @@ int parse_sender_address (cell in_msg_full) inline {
         (int total_share, int count) = (ds~load_uint(64), ds~load_uint(16));
 
         (int user, int share) = (in_msg_body~load_uint(256), in_msg_body~load_uint(32));
-        user~dump();
-
-        total_share += share;
-        count += 1;
 
         var (old_share, res) = dict~udict_set_get_builder?(256, user, begin_cell().store_uint(share, 32));
         if res {
+            total_share += share;
             total_share -= old_share~load_uint(32);
-            count -= 1;
+        } else {
+            total_share += share;
+            count += 1;
         }
 
         set_data(
@@ -147,11 +146,11 @@ int parse_sender_address (cell in_msg_full) inline {
 
         (int total_share, int count) = (ds~load_uint(64), ds~load_uint(16));
 
-        int precalc = msg_value / total_share;
+;;         int precalc = msg_value / total_share;
         (int user, slice cs, _) = dict.udict_get_next?(256, -1);
 
         repeat count {
-            int part = cs~load_uint(32) * precalc;
+            int part = cs~load_uint(32) * msg_value / total_share;
             send_raw_message(begin_cell()
                     .store_uint(33792, 6 + 11)
 ;;                     .store_uint(0x10, 6) ;; nobounce - int_msg_info$0 ihr_disabled:Bool bounce:Bool bounced:Bool src:MsgAddress -> 010000
