@@ -137,21 +137,29 @@ int parse_sender_address (cell in_msg_full) inline {
 
     ;; split_ton#068530b3 query_id:uint64 amount:Coins = InternalMsgBody;
     if (op == 0x068530b3) { ;; split ton
-        var (_, dict, total_share) = load_data(); ;; TODO: load owner first and dict after check
+
+        var ds = get_data().begin_parse();
+        ds~skip_bits(11 + 256); ;; skip owner
+        var dict = ds~load_dict();
         throw_if(122, dict.dict_empty?());
 
-        (int user, slice cs, int f) = dict.udict_get_next?(256, -1);
-        do { ;; TODO: try replace with repeat
-            int part = cs~load_uint(32) * msg_value / total_share;
+        (int total_share, int count) = (ds~load_uint(64), ds~load_uint(16));
+
+        int f = -1;
+
+        repeat count {
+            (int user, slice cs, f) = dict.udict_get_next?(256, -1);
+            int part = cs.preload_uint(32) * msg_value / total_share; ;; TODO: precalc mag_value / total_share
+
             send_raw_message(begin_cell()
-                    .store_uint(0x10, 6) ;; nobounce - int_msg_info$0 ihr_disabled:Bool bounce:Bool bounced:Bool src:MsgAddress -> 010000
-                    .store_uint(1024, 11) ;; std addr 0 workchain
+                    .store_uint(33792, 6 + 11)
+                    ;; .store_uint(0x10, 6) ;; nobounce - int_msg_info$0 ihr_disabled:Bool bounce:Bool bounced:Bool src:MsgAddress -> 010000
+                    ;; .store_uint(1024, 11) ;; std addr 0 workchain
                     .store_uint(user, 256)
                     .store_coins(part)
                     .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1)
                     .end_cell(), 1);
-            (user, cs, f) = dict.udict_get_next?(256, user);
-        } until (~ f);
+        };
         return();
     }
 
