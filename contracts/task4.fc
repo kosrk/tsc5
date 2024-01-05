@@ -22,6 +22,8 @@ const int max_w = 1000000000;
 
 global int g_n;
 global int g_m;
+global tuple g_maze;
+global tuple lmap;
 
 () recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
     return();
@@ -34,7 +36,7 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
     return in_tup;
 }
 
-(int, int, int) get_path(tuple lmap, int old_i, int old_j, int i, int j, int old_w) inline {
+(int, int, int) get_path(int old_i, int old_j, int i, int j, int old_w) inline {
     if (i >= 0) & (i < g_n) & (j >= 0) & (j < g_m) {
         var new_w = lmap.at(i).at(j);
         if (new_w < old_w) & (new_w != -1)  {
@@ -44,18 +46,18 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
     return (old_i, old_j, old_w);
 }
 
-(tuple, tuple, tuple, tuple, int) check_for(tuple maze, tuple lmap, tuple d_queue, tuple p_queue, tuple w_queue, int i, int j, int w, int end) inline {
+(tuple, tuple, tuple, int) check_for(tuple d_queue, tuple p_queue, tuple w_queue, int i, int j, int w, int end) inline {
     if (i >= 0) & (i < g_n) & (j >= 0) & (j < g_m) {
-        var symb = maze.at(i).at(j);
+        var symb = g_maze.at(i).at(j);
         if symb == e {
-            return (lmap, d_queue, p_queue, w_queue, -1);
+            return (d_queue, p_queue, w_queue, -1);
         }
         if symb == d {
             if lmap.at(i).at(j) == -1 {
                 d_queue~push_back(ut([i, j, w])); ;; dot cells must be extracted first
                 lmap = lmap.write_at(i, j, w);
             }
-            return (lmap, d_queue, p_queue, w_queue, end);
+            return (d_queue, p_queue, w_queue, end);
         }
         if symb == q {
             var new_w = w + prob_w;
@@ -63,7 +65,7 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
                 p_queue~push_back(ut([i, j, new_w])); ;; dot cells must be extracted first
                 lmap = lmap.write_at(i, j, new_w);
             }
-            return (lmap, d_queue, p_queue, w_queue, end);
+            return (d_queue, p_queue, w_queue, end);
         }
         if symb == x {
             var new_w = w + wall_w;
@@ -71,13 +73,13 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
                 w_queue~push_back(ut([i, j, new_w])); ;; dot cells must be extracted first
                 lmap = lmap.write_at(i, j, new_w);
             }
-            return (lmap, d_queue, p_queue, w_queue, end);
+            return (d_queue, p_queue, w_queue, end);
         }
     }
-    return (lmap, d_queue, p_queue, w_queue, end);
+    return (d_queue, p_queue, w_queue, end);
 }
 
-(tuple, tuple, int) step_forward(tuple maze, tuple lmap, tuple queue, tuple batch) inline {
+(tuple, int) step_forward(tuple queue, tuple batch) inline {
 
     var d_queue = null();
     var p_queue = null();
@@ -89,14 +91,14 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
         var cur_i = cur.at(0);
         var cur_j = cur.at(1);
         var w = lmap.at(cur_i).at(cur_j) + step_w;
-        (lmap, d_queue, p_queue, w_queue, end) = check_for(maze, lmap, d_queue, p_queue, w_queue, cur_i, cur_j - 1, w, end);
-        (lmap, d_queue, p_queue, w_queue, end) = check_for(maze, lmap, d_queue, p_queue, w_queue, cur_i + 1, cur_j, w, end);
-        (lmap, d_queue, p_queue, w_queue, end) = check_for(maze, lmap, d_queue, p_queue, w_queue, cur_i, cur_j + 1, w, end);
-        (lmap, d_queue, p_queue, w_queue, end) = check_for(maze, lmap, d_queue, p_queue, w_queue, cur_i - 1, cur_j, w, end);
-        (lmap, d_queue, p_queue, w_queue, end) = check_for(maze, lmap, d_queue, p_queue, w_queue, cur_i + 1, cur_j + 1, w, end);
-        (lmap, d_queue, p_queue, w_queue, end) = check_for(maze, lmap, d_queue, p_queue, w_queue, cur_i + 1, cur_j - 1, w, end);
-        (lmap, d_queue, p_queue, w_queue, end) = check_for(maze, lmap, d_queue, p_queue, w_queue, cur_i - 1, cur_j + 1, w, end);
-        (lmap, d_queue, p_queue, w_queue, end) = check_for(maze, lmap, d_queue, p_queue, w_queue, cur_i - 1, cur_j - 1, w, end);
+        (d_queue, p_queue, w_queue, end) = check_for(d_queue, p_queue, w_queue, cur_i, cur_j - 1, w, end);
+        (d_queue, p_queue, w_queue, end) = check_for(d_queue, p_queue, w_queue, cur_i + 1, cur_j, w, end);
+        (d_queue, p_queue, w_queue, end) = check_for(d_queue, p_queue, w_queue, cur_i, cur_j + 1, w, end);
+        (d_queue, p_queue, w_queue, end) = check_for(d_queue, p_queue, w_queue, cur_i - 1, cur_j, w, end);
+        (d_queue, p_queue, w_queue, end) = check_for(d_queue, p_queue, w_queue, cur_i + 1, cur_j + 1, w, end);
+        (d_queue, p_queue, w_queue, end) = check_for(d_queue, p_queue, w_queue, cur_i + 1, cur_j - 1, w, end);
+        (d_queue, p_queue, w_queue, end) = check_for(d_queue, p_queue, w_queue, cur_i - 1, cur_j + 1, w, end);
+        (d_queue, p_queue, w_queue, end) = check_for(d_queue, p_queue, w_queue, cur_i - 1, cur_j - 1, w, end);
     }
 
     tuple dq = empty_tuple();
@@ -132,61 +134,61 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
 
     queue = ut([dq, pq, wq]);
 
-    return (lmap, queue, end);
+    return (queue, end);
 }
 
-tuple forward(int end_i, int end_j, tuple queue, tuple maze, tuple lmap) impure inline {
+() forward(int end_i, int end_j, tuple queue) impure inline {
     int end = 0;
             repeat 1000 {
                 if tlen(queue.at(0)) > 0 {
                     var row = queue.at(0);
                     var batch = row~tpop();
                     queue~tset(0, row);
-                    (lmap, queue, end) = step_forward(maze, lmap, queue, batch);
+                    (queue, end) = step_forward(queue, batch);
                     if (end == -1) {
-                        return lmap;
+                        return ();
                     }
                 } else {
                     if tlen(queue.at(1)) > 0 {
                         var row = queue.at(1);
                         var batch = row~tpop();
                         queue~tset(1, row);
-                        (lmap, queue, end) = step_forward(maze, lmap, queue, batch);
+                        (queue, end) = step_forward(queue, batch);
                         if (end == -1) {
-                            return lmap;
+                            return ();
                         }
                     } else {
                         if tlen(queue.at(2)) > 0 {
                             var row = queue.at(2);
                             var batch = row~tpop();
                             queue~tset(2, row);
-                            (lmap, queue, end) = step_forward(maze, lmap, queue, batch);
+                            (queue, end) = step_forward(queue, batch);
                             if (end == -1) {
-                                return lmap;
+                                return ();
                             }
                         } else {
-                            return lmap;
+                            return ();
                         }
                     }
                 }
             }
-    return lmap;
+    return ();
 }
 
-(int, int, int) back(tuple l_map, int i, int j) inline {
+(int, int, int) back(int i, int j) inline {
 
     var best_w = max_w;
     var best_i = i;
     var best_j = j;
 
-    (best_i, best_j, best_w) = get_path(l_map, best_i, best_j, i + 1, j + 1, best_w);
-    (best_i, best_j, best_w) = get_path(l_map, best_i, best_j, i + 1, j - 1, best_w);
-    (best_i, best_j, best_w) = get_path(l_map, best_i, best_j, i - 1, j + 1, best_w);
-    (best_i, best_j, best_w) = get_path(l_map, best_i, best_j, i - 1, j - 1, best_w);
-    (best_i, best_j, best_w) = get_path(l_map, best_i, best_j, i - 1, j, best_w);
-    (best_i, best_j, best_w) = get_path(l_map, best_i, best_j, i, j + 1, best_w);
-    (best_i, best_j, best_w) = get_path(l_map, best_i, best_j, i + 1, j, best_w);
-    (best_i, best_j, best_w) = get_path(l_map, best_i, best_j, i, j - 1, best_w);
+    (best_i, best_j, best_w) = get_path(best_i, best_j, i + 1, j + 1, best_w);
+    (best_i, best_j, best_w) = get_path(best_i, best_j, i + 1, j - 1, best_w);
+    (best_i, best_j, best_w) = get_path(best_i, best_j, i - 1, j + 1, best_w);
+    (best_i, best_j, best_w) = get_path(best_i, best_j, i - 1, j - 1, best_w);
+    (best_i, best_j, best_w) = get_path(best_i, best_j, i - 1, j, best_w);
+    (best_i, best_j, best_w) = get_path(best_i, best_j, i, j + 1, best_w);
+    (best_i, best_j, best_w) = get_path(best_i, best_j, i + 1, j, best_w);
+    (best_i, best_j, best_w) = get_path(best_i, best_j, i, j - 1, best_w);
     return(best_i, best_j, best_w);
 }
 
@@ -196,9 +198,10 @@ tuple forward(int end_i, int end_j, tuple queue, tuple maze, tuple lmap) impure 
 
     g_n = n;
     g_m = m;
+    g_maze = maze;
+    tuple lmap_init = empty_tuple();
 
     ;; INIT
-    var l_map = empty_tuple();
     var start_i = 0;
     var start_j = 0;
     var end_i = 0;
@@ -224,13 +227,15 @@ tuple forward(int end_i, int end_j, tuple queue, tuple maze, tuple lmap) impure 
             }
             j = j + 1;
         }
-        l_map~tpush(row);
+        lmap_init~tpush(row);
         i = i + 1;
     }
 
     if (abs(start_i - end_i) < 2) & (abs(start_j - end_j) < 2) { ;; check for zero path
         return (0, 0, 1, maze);
     }
+
+    lmap = lmap_init;
 
     tuple init_batch = null();
     init_batch~push_back(ut([start_i, start_j, 0]));
@@ -242,15 +247,14 @@ tuple forward(int end_i, int end_j, tuple queue, tuple maze, tuple lmap) impure 
     ]);
 
     ;; Forward trace
-    l_map = forward(end_i, end_j, init_queue, maze, l_map);
-;;     l_map~dump();
+    forward(end_i, end_j, init_queue);
 
     ;; Back trace
     var cur_i = end_i;
     var cur_j = end_j;
-    l_map = l_map.write_at(end_i, end_j, max_w);
+    lmap = lmap.write_at(end_i, end_j, max_w);
 
-    (cur_i, cur_j, int w) = back(l_map, end_i, end_j);
+    (cur_i, cur_j, int w) = back(end_i, end_j);
 
     var walls = w / wall_w;
     var prob = (w - walls * wall_w) / prob_w;
@@ -260,7 +264,7 @@ tuple forward(int end_i, int end_j, tuple queue, tuple maze, tuple lmap) impure 
     solved_maze = write_at(solved_maze, cur_i, cur_j, p);
 
     repeat (1000) {
-        (cur_i, cur_j, int cur_w) = back(l_map, cur_i, cur_j);
+        (cur_i, cur_j, int cur_w) = back(cur_i, cur_j);
         if cur_w == 0 {
             return (walls, prob, path, solved_maze);
         }
