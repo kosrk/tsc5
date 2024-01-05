@@ -49,6 +49,13 @@ tuple gen_zero_tup() asm
         " TUPLEVAR "                            ;; nmtup
         ;
 
+tuple push_to_end(tuple item, tuple in_tuple) asm
+        " 255 PUSHINT "                         ;; it tup 255
+        " EXPLODEVAR "                          ;; it [tup[0]..tup[m]] m
+        " INC "                                 ;; it [tup[0]..tup[m]] m+1
+        " TUPLEVAR "                            ;; [it, tup[0]..tup[m]]
+        ;
+
 tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
     var row = in_tup.at(in_i);
     row~tset(in_j, val);
@@ -122,44 +129,26 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
         check_for(cur_i - 1, cur_j - 1, w);
     }
 
-    tuple dq = empty_tuple();
-    tuple pq = empty_tuple();
-    tuple wq = empty_tuple();
+    tuple dq = queue.at(0);
+    tuple pq = queue.at(1);
+    tuple wq = queue.at(2);
 
     if ~ d_queue.is_null() {
-        dq~tpush(d_queue);
-    }
-    var i = 0;
-    repeat queue.at(0).tlen() {
-        dq~tpush(queue.at(0).at(i));
-        i = i + 1;
+        dq = push_to_end(d_queue, dq);
     }
 
     if ~ p_queue.is_null() {
-        pq~tpush(p_queue);
-    }
-    var i = 0;
-    repeat queue.at(1).tlen() {
-        pq~tpush(queue.at(1).at(i));
-        i = i + 1;
+        pq = push_to_end(p_queue, pq);
     }
 
     if ~ w_queue.is_null() {
-        wq~tpush(w_queue);
-    }
-    var i = 0;
-    repeat queue.at(2).tlen() {
-        wq~tpush(queue.at(2).at(i));
-        i = i + 1;
+        wq = push_to_end(w_queue, wq);
     }
 
-    queue = ut([dq, pq, wq]);
-
-    return queue;
+    return ut([dq, pq, wq]);
 }
 
 tuple forward(int end_i, int end_j, tuple queue) impure inline {
-;;     queue~dump();
 
     if tlen(queue.at(0)) > 0 {
         var row = queue.at(0);
