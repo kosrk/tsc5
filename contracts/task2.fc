@@ -48,17 +48,44 @@ int parse_sender_address (cell in_msg_full) inline {
 
     ;; add_user#368ddef3 query_id:uint64 address:MsgAddressInt share:uint32 = InternalMsgBody;
     if (op == 0x368ddef3) { ;; add user
-        int sender_address = parse_sender_address(in_msg_full);
-        var (owner, dict, total_share) = load_data(); ;; TODO: load owner first and dict after check
+
+        var cs = in_msg_full.begin_parse();
+        cs~load_uint(4 + 11); ;; flags + addr std op + wc
+        int sender_address = cs.preload_uint(256); ;; sender address
+
+        var ds = get_data().begin_parse();
+        ds~load_uint(11);
+        int owner = ds~load_uint(256);
+
         throw_unless(120, sender_address == owner);
+
         in_msg_body~skip_bits(64 + 11); ;; query_id and addr prefix
+        var dict = ds~load_dict();
+
+;;         if ds.slice_bits() >= 64 + 16 { ;; TODO: try to check once
+        (int total_share, int count) = (ds~load_uint(64), ds~load_uint(16));
+;;         }
+
         var (user, share) = (in_msg_body~load_uint(256), in_msg_body~load_uint(32));
+
         total_share += share;
+        count += 1;
+
         var (old_share, res) = dict~udict_set_get_builder?(256, user, begin_cell().store_uint(share, 32));
         if res {
             total_share -= old_share~load_uint(32);
         }
-        save_data(owner, dict, total_share);
+
+        set_data(
+                begin_cell()
+                        .store_uint(1024,11)
+                        .store_uint(owner, 256)
+                        .store_dict(dict)
+                        .store_uint(total_share, 64)
+                        .store_uint(count, 16)
+                        .end_cell()
+        );
+
         return();
     }
 
