@@ -168,7 +168,7 @@
                             .store_uint(1024, 11) ;; std addr 0 workchain
                             .store_uint(user, 256) ;; destination
                             .store_uint(1024, 11) ;; std addr 0 workchain
-                            .store_uint(user, 256) ;; responseDestination
+                            .store_uint(0, 256) ;; responseDestination
                             .store_uint(514, 14)
 ;;                             .store_uint(0, 1) ;; custom payload
 ;;                             .store_coins(1) ;; forward amount
