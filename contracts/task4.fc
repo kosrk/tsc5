@@ -265,15 +265,18 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
     var prob = (w - walls * wall_w) / prob_w;
     var path = w - walls * wall_w - prob * prob_w + 1;
 
-    var solved_maze = maze;
-    solved_maze = write_at(solved_maze, cur_i, cur_j, p);
+    var row = maze.at(cur_i);
+    row~tset(cur_j, p);
+    maze~tset(cur_i, row);
 
     repeat (1000) {
         (cur_i, cur_j, int cur_w) = back(cur_i, cur_j);
         if cur_w == 0 {
-            return (walls, prob, path, solved_maze);
+            return (walls, prob, path, maze);
         }
-        solved_maze = write_at(solved_maze, cur_i, cur_j, p);
+        var row = maze.at(cur_i);
+        row~tset(cur_j, p);
+        maze~tset(cur_i, row);
     };
 
     return (-1, 0, 0, null());
