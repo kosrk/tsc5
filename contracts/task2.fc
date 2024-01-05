@@ -6,6 +6,7 @@
 ;; total_share optional
 
 (cell, (slice, int)) ~udict_set_get_builder?(cell dict, int key_len, int index, builder value) asm(value index dict key_len) "DICTUSETGETB NULLSWAPIFNOT";
+(int, slice, int) udict_get_next_mod(cell dict, int key_len, int pivot) asm(pivot dict key_len -> 1 0 2) "DICTUGETNEXT";
 
 ;; TODO: move to receiver
 int parse_sender_address (cell in_msg_full) inline {
@@ -146,9 +147,9 @@ int parse_sender_address (cell in_msg_full) inline {
 
         (int total_share, int count) = (ds~load_uint(64), ds~load_uint(16));
 
-        (int user, slice cs, _) = dict.udict_get_next?(256, -1);
-
+        int user = -1;
         repeat count {
+            (user, slice cs, _) = dict.udict_get_next_mod(256, user);
             int part = cs~load_uint(32) * msg_value / total_share;
             send_raw_message(begin_cell()
                     .store_uint(33792, 6 + 11)
@@ -158,7 +159,6 @@ int parse_sender_address (cell in_msg_full) inline {
                     .store_coins(part)
                     .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1)
                     .end_cell(), 1);
-            (user, cs, _) = dict.udict_get_next?(256, user);
         };
         return();
     }
