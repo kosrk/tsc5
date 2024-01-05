@@ -20,8 +20,8 @@ const int prob_w = 1000;
 const int wall_w = 1000000;
 const int max_w = 1000000000;
 
-global int g_n;
-global int g_m;
+global int g_n; ;; 1 GETGLOB
+global int g_m; ;; 2 GETGLOB
 global tuple g_maze;
 global tuple lmap;
 global tuple d_queue;
@@ -33,21 +33,20 @@ global int end;
     return();
 }
 
-tuple gen_zero_tup(int n, int m) asm
-                                                ;; n m
-        " DUP "                                 ;; n m m
-        " REPEAT:<{ "                           ;; n m
-        "   TRUE"                               ;; n m -1
-        " }>"                                   ;; n m -1xM
-        " DEPTH 2 SUBINT PICK"                  ;; n m -1xM m
-        " TUPLEVAR "                            ;; n m mtup
-        " SWAP DROP OVER "                      ;; n mtup n
-        " DEC "                                 ;; n mtup n-1
-        " REPEAT:<{ "                           ;; n mtup
-        "   DUP "                               ;; n mtup mtup
-        " }> "                                  ;; n mtupxN
-        " DEPTH DEC PICK"                       ;; n -1xM n
-        " TUPLEVAR SWAP DROP"                   ;; nmtup
+tuple gen_zero_tup() asm
+                                                ;;
+        " 2 GETGLOB "                           ;; m
+        " REPEAT:<{ "                           ;;
+        "   TRUE"                               ;; -1
+        " }>"                                   ;; -1xM
+        " 2 GETGLOB "                           ;; -1xM m
+        " TUPLEVAR "                            ;; mtup
+        " 1 GETGLOB DEC"                        ;; mtup n-1
+        " REPEAT:<{ "                           ;; mtup
+        "   DUP "                               ;; mtup mtup
+        " }> "                                  ;; mtupxN
+        " 1 GETGLOB "                           ;; mtupxN n
+        " TUPLEVAR "                            ;; nmtup
         ;
 
 tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
@@ -211,11 +210,11 @@ tuple forward(int end_i, int end_j, tuple queue) impure inline {
 
     set_gas_limit(100000000);
 
-    tuple lmap_init = gen_zero_tup(n, m);
-
     g_n = n;
     g_m = m;
     g_maze = maze;
+
+    tuple lmap_init = gen_zero_tup();
 
     ;; INIT
     var start_i = 0;
