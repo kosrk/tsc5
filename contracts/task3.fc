@@ -29,7 +29,7 @@
 
     if expected_version > current_version {
         throw_if(200, cell_null?(new_code));
-        throw_if(200, slice_empty?(new_code.begin_parse()));
+;;         throw_if(200, slice_empty?(new_code.begin_parse()));
         var old_code = get_c3();
         (int start_version, slice cs, int f) = migrations.udict_get_next?(32, -1);
         while f {
