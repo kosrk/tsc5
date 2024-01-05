@@ -64,47 +64,46 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
 }
 
 (int, int, int) get_path(int old_i, int old_j, int i, int j, int old_w) inline {
-    if (i >= 0) & (i < g_n) & (j >= 0) & (j < g_m) {
-        var new_w = lmap.at(i).at(j);
-        if (new_w < old_w) & (new_w != -1)  {
-            return (i, j, new_w);
-        }
+    if (i < 0) | (i >= g_n) | (j < 0) | (j >= g_m) {
+        return (old_i, old_j, old_w);
+    }
+    var new_w = lmap.at(i).at(j);
+    if (new_w < old_w) & (new_w != -1)  {
+        return (i, j, new_w);
     }
     return (old_i, old_j, old_w);
 }
 
 () check_for(int i, int j, int w) impure inline {
-    if (i >= 0) & (i < g_n) & (j >= 0) & (j < g_m) {
-        var symb = g_maze.at(i).at(j);
-        if symb == d {
-            if lmap.at(i).at(j) == -1 {
-                d_queue~push_back(ut([i, j, w])); ;; dot cells must be extracted first
-                lmap = lmap.write_at(i, j, w);
-            }
-            return ();
-        }
-        if symb == q {
-            var new_w = w + prob_w;
-            if lmap.at(i).at(j) == -1 {
-                p_queue~push_back(ut([i, j, new_w])); ;; dot cells must be extracted first
-                lmap = lmap.write_at(i, j, new_w);
-            }
-            return ();
-        }
-        if symb == e {
-            end = -1;
-            return ();
-        }
-        if symb == x {
-            var new_w = w + wall_w;
-            if lmap.at(i).at(j) == -1 {
-                w_queue~push_back(ut([i, j, new_w])); ;; dot cells must be extracted first
-                lmap = lmap.write_at(i, j, new_w);
-            }
-            return ();
-        }
+    if (i < 0) | (i >= g_n) | (j < 0) | (j >= g_m) {
+        return ();
     }
-    return ();
+    var symb = g_maze.at(i).at(j);
+    if symb == d {
+        if lmap.at(i).at(j) == -1 {
+            d_queue~push_back(ut([i, j, w])); ;; dot cells must be extracted first
+            lmap = lmap.write_at(i, j, w);
+        }
+        return ();
+    }
+    if symb == q {
+        if lmap.at(i).at(j) == -1 {
+            p_queue~push_back(ut([i, j, w + prob_w])); ;; dot cells must be extracted first
+            lmap = lmap.write_at(i, j, w + prob_w);
+        }
+        return ();
+    }
+    if symb == x {
+        if lmap.at(i).at(j) == -1 {
+            w_queue~push_back(ut([i, j, w + wall_w])); ;; dot cells must be extracted first
+            lmap = lmap.write_at(i, j, w + wall_w);
+        }
+        return ();
+    }
+    if symb == e {
+        end = -1;
+        return ();
+    }
 }
 
 (tuple) step_forward(tuple queue, tuple batch) inline {
