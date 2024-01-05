@@ -191,7 +191,7 @@ cell get_users() method_id {
 ;;     if dict.dict_empty?() {
 ;;        return null();
 ;;     }
-    return cs~load_dict(); ;; TODO: optimize
+    return cs.preload_dict();
 }
 
 int get_user_share(slice user_address) method_id {
