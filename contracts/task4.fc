@@ -34,18 +34,20 @@ global int end;
 }
 
 tuple gen_zero_tup(int n, int m) asm
-                                              ;; n m
-        " DUP "                               ;; n m m
-        " REPEAT:<{ "                         ;; n m
-        "   TRUE SWAP"                        ;; n -1 m
-        " }>"                                 ;; n -1xM m
-        " TUPLEVAR "                          ;; n mtup
-        " SWAP DUP "                          ;; mtup n n
-        " DEC "                               ;; mtup n n-1
-        " REPEAT:<{ "                           ;; mtup n
-        "   OVER SWAP "                           ;; mtup mtup n
-        " }> "                                  ;; mtupxN n
-        " TUPLEVAR "                            ;; nmtup
+                                                ;; n m
+        " DUP "                                 ;; n m m
+        " REPEAT:<{ "                           ;; n m
+        "   TRUE"                               ;; n m -1
+        " }>"                                   ;; n m -1xM
+        " DEPTH 2 SUBINT PICK"                  ;; n m -1xM m
+        " TUPLEVAR "                            ;; n m mtup
+        " SWAP DROP OVER "                      ;; n mtup n
+        " DEC "                                 ;; n mtup n-1
+        " REPEAT:<{ "                           ;; n mtup
+        "   DUP "                               ;; n mtup mtup
+        " }> "                                  ;; n mtupxN
+        " DEPTH DEC PICK"                       ;; n -1xM n
+        " TUPLEVAR SWAP DROP"                   ;; nmtup
         ;
 
 tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
