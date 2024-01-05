@@ -71,7 +71,7 @@ export class Task2 implements Contract {
         await provider.internal(via, {
             value,
             sendMode: SendMode.PAY_GAS_SEPARATELY,
-            body: beginCell().storeUint(0x701c09a6, 32).storeUint(0,64).storeCoins(amount).endCell(),
+            body: beginCell().storeUint(0x7362d09c, 32).storeUint(0,64).storeCoins(amount).endCell(),
         });
     }
 
