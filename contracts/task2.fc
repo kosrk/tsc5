@@ -71,7 +71,7 @@ int parse_sender_address (cell in_msg_full) inline {
 
         throw_unless(120, sender_address == owner);
 
-        in_msg_body~skip_bits(64 + 11); ;; query_id and addr prefix
+        in_msg_body~load_uint(64 + 11); ;; query_id and addr prefix
         var dict = ds~load_dict();
 
         (int total_share, int count) = (ds~load_uint(64), ds~load_uint(16));
@@ -79,12 +79,12 @@ int parse_sender_address (cell in_msg_full) inline {
         (int user, int share) = (in_msg_body~load_uint(256), in_msg_body~load_uint(32));
 
         var (old_share, res) = dict~udict_set_get_builder?(256, user, begin_cell().store_uint(share, 32));
+        total_share += share;
+        count += 1;
+
         if res {
-            total_share += share;
+            count -= 1;
             total_share -= old_share~load_uint(32);
-        } else {
-            total_share += share;
-            count += 1;
         }
 
         set_data(
@@ -146,7 +146,6 @@ int parse_sender_address (cell in_msg_full) inline {
 
         (int total_share, int count) = (ds~load_uint(64), ds~load_uint(16));
 
-;;         int precalc = msg_value / total_share;
         (int user, slice cs, _) = dict.udict_get_next?(256, -1);
 
         repeat count {
