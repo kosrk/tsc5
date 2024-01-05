@@ -85,6 +85,7 @@ int parse_sender_address (cell in_msg_full) inline {
         var (old_share, res) = dict~udict_set_get_builder?(256, user, begin_cell().store_uint(share, 32));
         if res {
             total_share -= old_share~load_uint(32);
+            count -= 1;
         }
 
         set_data(
