@@ -165,22 +165,30 @@ int parse_sender_address (cell in_msg_full) inline {
 
     ;; transfer_notification#701c09a6 query_id:uint64 amount:Coins = InternalMsgBody;
     if (op == 0x7362d09c) { ;; transfer notification
-        var (_, dict, total_share) = load_data(); ;; TODO: load owner first and dict after check
+
+        var ds = get_data().begin_parse();
+        ds~skip_bits(11 + 256); ;; skip owner
+        var dict = ds~load_dict();
         throw_if(122, dict.dict_empty?());
+
         in_msg_body~skip_bits(64); ;; query_id
         int amount = in_msg_body~load_coins(); ;; TODO: maybe optimize
-        int sender_address = parse_sender_address(in_msg_full);
 
+        var cs = in_msg_full.begin_parse();
+        cs~load_uint(4 + 11); ;; flags + addr std op + wc
+        int sender_address = cs.preload_uint(256); ;; sender address
 
-        (int user, slice cs, int f) = dict.udict_get_next?(256, -1);
-        do { ;; TODO: try replace with repeat
+        (int total_share, int count) = (ds~load_uint(64), ds~load_uint(16));
+
+        (int user, slice cs, _) = dict.udict_get_next?(256, -1);
+        repeat count {
             int part = cs~load_uint(32) * amount / total_share;
             send_raw_message(begin_cell()
                     .store_uint(33792, 6 + 11)
 ;;                     .store_uint(0x18, 6) ;; bounce - int_msg_info$0 ihr_disabled:Bool bounce:Bool bounced:Bool src:MsgAddress -> 010000
 ;;                     .store_uint(1024, 11) ;; std addr 0 workchain
                     .store_uint(sender_address, 256)
-                    .store_coins(20000000)
+                    .store_uint(17199869184, 36) ;; .store_coins(20000000)
                     .store_uint(1, 1 + 4 + 4 + 64 + 32 + 1 + 1)
                     .store_ref(
                             begin_cell()
@@ -190,15 +198,15 @@ int parse_sender_address (cell in_msg_full) inline {
                             .store_uint(user, 256) ;; destination
                             .store_uint(1024, 11) ;; std addr 0 workchain
                             .store_uint(user, 256) ;; responseDestination
-                                    .store_uint(514, 14)
-;;                             .store_uint(0, 1) ;; custom payload ;; TODO: optimize
+                            .store_uint(514, 14)
+;;                             .store_uint(0, 1) ;; custom payload
 ;;                             .store_coins(1) ;; forward amount
 ;;                             .store_uint(0,1) ;; forward payload
                             .end_cell()
                     )
                     .end_cell(), 1);
-            (user, cs, f) = dict.udict_get_next?(256, user);
-        } until (~ f);
+            (user, cs, _) = dict.udict_get_next?(256, user);
+        };
         return();
     }
 }
