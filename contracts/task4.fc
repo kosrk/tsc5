@@ -33,6 +33,21 @@ global int end;
     return();
 }
 
+tuple gen_zero_tup(int n, int m) asm
+                                              ;; n m
+        " DUP "                               ;; n m m
+        " REPEAT:<{ "                         ;; n m
+        "   TRUE SWAP"                        ;; n -1 m
+        " }>"                                 ;; n -1xM m
+        " TUPLEVAR "                          ;; n mtup
+        " SWAP DUP "                          ;; mtup n n
+        " DEC "                               ;; mtup n n-1
+        " REPEAT:<{ "                           ;; mtup n
+        "   OVER SWAP "                           ;; mtup mtup n
+        " }> "                                  ;; mtupxN n
+        " TUPLEVAR "                            ;; nmtup
+        ;
+
 tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
     var row = in_tup.at(in_i);
     row~tset(in_j, val);
@@ -194,10 +209,11 @@ tuple forward(int end_i, int end_j, tuple queue) impure inline {
 
     set_gas_limit(100000000);
 
+    tuple lmap_init = gen_zero_tup(n, m);
+
     g_n = n;
     g_m = m;
     g_maze = maze;
-    tuple lmap_init = empty_tuple();
 
     ;; INIT
     var start_i = 0;
@@ -215,9 +231,8 @@ tuple forward(int end_i, int end_j, tuple queue) impure inline {
             if maze.at(i).at(j) == s {
                 start_i = i;
                 start_j = j;
-                row~tpush(0);
-            } else {
-                row~tpush(-1);
+                lmap_init = lmap_init.write_at(i, j, 0);
+
             }
             if maze.at(i).at(j) == e {
                 end_i = i;
@@ -225,7 +240,6 @@ tuple forward(int end_i, int end_j, tuple queue) impure inline {
             }
             j = j + 1;
         }
-        lmap_init~tpush(row);
         i = i + 1;
     }
 
