@@ -89,6 +89,13 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
         return ();
     }
     var symb = g_maze.at(i).at(j);
+        if symb == x {
+        if lmap.at(i).at(j) == -1 {
+            w_queue~push_back(ut([i, j, w + wall_w])); ;; dot cells must be extracted first
+            lmap = lmap.write_at(i, j, w + wall_w);
+        }
+        return ();
+    }
     if symb == d {
         if lmap.at(i).at(j) == -1 {
             d_queue~push_back(ut([i, j, w])); ;; dot cells must be extracted first
@@ -100,13 +107,6 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
         if lmap.at(i).at(j) == -1 {
             p_queue~push_back(ut([i, j, w + prob_w])); ;; dot cells must be extracted first
             lmap = lmap.write_at(i, j, w + prob_w);
-        }
-        return ();
-    }
-    if symb == x {
-        if lmap.at(i).at(j) == -1 {
-            w_queue~push_back(ut([i, j, w + wall_w])); ;; dot cells must be extracted first
-            lmap = lmap.write_at(i, j, w + wall_w);
         }
         return ();
     }
