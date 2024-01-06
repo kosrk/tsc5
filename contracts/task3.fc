@@ -4,12 +4,10 @@
 ;; _ new_version:uint32 migration_code:(Maybe ^Cell) = MigrationPayload;
 ;; _ expected_version:uint32 new_code:(Maybe ^Cell) migrations:(HashmapE 32 MigrationPayload) payload:^Cell = InternalMsgBody;
 
-() recv_internal(int msg_value, cell in_msg_full, slice in_msg_body) impure {
+() recv_internal(int balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
 
     int expected_version = in_msg_body~load_uint(32);
-    var new_code = in_msg_body~load_maybe_ref();
-    cell migrations = in_msg_body~load_dict();
-    cell payload = in_msg_body.preload_ref();
+
 
     ;; ---
     ;; here you should check if it's the first call or not based on `expected_version` as stated in the task
@@ -21,12 +19,16 @@
         return();
     }
 
+    var new_code = in_msg_body~load_maybe_ref();
+    cell migrations = in_msg_body~load_dict();
+    cell payload = in_msg_body.preload_ref();
+
     slice ds = get_data().begin_parse();
     int current_version = ds~load_uint(32);
     cell storage = ds.preload_ref();
 
     if expected_version == current_version {
-        storage = process_message(storage, msg_value, 0, in_msg_full, payload.begin_parse());
+        storage = process_message(storage, msg_value, balance, in_msg_full, payload.begin_parse());
         set_data(wrap_storage(expected_version,storage));
         return();
     }
@@ -46,7 +48,7 @@
             if current_version == expected_version { ;; storage updated
                 set_code(new_code);
                 set_c3(bless(new_code.begin_parse()));
-                storage = process_message(storage, msg_value, 0, in_msg_full, payload.begin_parse());
+                storage = process_message(storage, msg_value, balance, in_msg_full, payload.begin_parse());
                 set_data(wrap_storage(expected_version,storage));
                 return();
             }
