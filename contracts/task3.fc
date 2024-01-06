@@ -37,19 +37,19 @@
     while f {
         int end_version = cs~load_uint(32);
         if start_version == current_version { ;; migration is presented
-            var migration_code = cs~load_maybe_ref();
+            var migration_code = cs.preload_maybe_ref();
             if ~ cell_null?(migration_code) { ;; need storage migration
                 set_c3(bless(migration_code.begin_parse()));
                 storage = migrate_one(storage); ;; migrate storage
             }
             current_version = end_version;
-        }
-        if current_version == expected_version { ;; storage updated
-            set_code(new_code);
-            set_c3(bless(new_code.begin_parse()));
-            storage = process_message(storage, msg_value, balance, in_msg_full, payload.begin_parse());
-            set_data(wrap_storage(expected_version,storage));
-            return();
+            if current_version == expected_version { ;; storage updated
+                set_code(new_code);
+                set_c3(bless(new_code.begin_parse()));
+                storage = process_message(storage, msg_value, balance, in_msg_full, payload.begin_parse());
+                set_data(wrap_storage(expected_version,storage));
+                return();
+            }
         }
         (start_version, cs, f) = migrations.udict_get_next?(32, start_version);
     };
