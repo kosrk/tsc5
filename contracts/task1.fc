@@ -21,9 +21,6 @@
   ;; if (in_msg.slice_empty?()) { ;; ignore empty messages
   ;; return ();
   ;; }
-      if (in_msg_body.slice_bits() < 32) { ;; ignore short messages and init storage at deploy
-        return ();
-    }
 
   int op = in_msg~load_uint(32); ;; maybe use preload
 
