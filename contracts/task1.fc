@@ -23,10 +23,10 @@
   ;; }
 
   int op = in_msg~load_uint(32); ;; maybe use preload
-  in_msg~load_uint(64); ;; query_id
 
   if (op == 0x9df10277) {
 
+    in_msg~load_uint(64); ;; query_id
     var signature = in_msg~load_bits(512);
     var c = in_msg.preload_ref();
     var cs = c.begin_parse();
