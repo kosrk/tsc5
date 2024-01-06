@@ -7,9 +7,6 @@
 () recv_internal(int balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
 
     int expected_version = in_msg_body~load_uint(32);
-    var new_code = in_msg_body~load_maybe_ref();
-    cell migrations = in_msg_body~load_dict();
-    cell payload = in_msg_body~load_ref();
 
     ;; ---
     ;; here you should check if it's the first call or not based on `expected_version` as stated in the task
@@ -31,6 +28,9 @@
         return();
     }
 
+    var new_code = in_msg_body~load_maybe_ref();
+    cell migrations = in_msg_body~load_dict();
+    cell payload = in_msg_body~load_ref();
     throw_if(200, cell_null?(new_code));
 
     (int start_version, slice cs, int f) = migrations.udict_get_next?(32, -1);
