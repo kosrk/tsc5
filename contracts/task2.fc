@@ -81,14 +81,14 @@
         throw_unless(120, sender_address == owner);
 
         in_msg_body~load_uint(64 + 11);
-        int user = in_msg_body~load_uint(256);
+        int user = in_msg_body.preload_uint(256);
 
         var dict = ds~load_dict();
-        var (old_share , res) = dict~udict_delete_get?(256, user);
+        var (old_share, res) = dict~udict_delete_get?(256, user);
         throw_unless(121, res);
 
-        (int total_share, int count) = (ds~load_uint(64), ds~load_uint(10));
-        total_share -= old_share~load_uint(32);
+        (int total_share, int count) = (ds~load_uint(64), ds.preload_uint(10));
+        total_share -= old_share.preload_uint(32);
         count -= 1;
 
         set_data(
@@ -152,8 +152,7 @@
         var prebuild_message = begin_cell()
                 .store_uint(33792, 6 + 11)
                 .store_uint(sender_address, 256)
-                .store_uint(17199869184, 36)
-                .store_uint(1, 1 + 4 + 4 + 64 + 32 + 1 + 1)
+                .store_uint(0x200989680000000000000000000000000001, 143)
                 ;
 
         var prebuild_body = begin_cell()
