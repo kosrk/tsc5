@@ -147,28 +147,30 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
     return ut([dq, pq, wq]);
 }
 
-tuple forward(int end_i, int end_j, tuple queue) impure inline {
+tuple forward(tuple queue) impure inline {
 
-    if tlen(queue.at(0)) > 0 {
-        var row = queue.at(0);
-        var batch = row~tpop();
-        queue~tset(0, row);
+    var q1 = queue.at(0);
+
+    if tlen(q1) > 0 {
+;;         var row = queue.at(0);
+        var batch = q1~tpop();
+        queue~tset(0, q1);
         queue = step_forward(queue, batch);
         return queue;
     }
 
-    if tlen(queue.at(1)) > 0 {
-        var row = queue.at(1);
-        var batch = row~tpop();
-        queue~tset(1, row);
+    var q2 = queue.at(1);
+    if tlen(q2) > 0 {
+        var batch = q2~tpop();
+        queue~tset(1, q2);
         queue = step_forward(queue, batch);
         return queue;
     }
 
-    if tlen(queue.at(2)) > 0 {
-        var row = queue.at(2);
-        var batch = row~tpop();
-        queue~tset(2, row);
+    var q3 = queue.at(2);
+    if tlen(q3) > 0 {
+        var batch = q3~tpop();
+        queue~tset(2, q3);
         queue = step_forward(queue, batch);
         return queue;
     }
@@ -214,18 +216,17 @@ tuple forward(int end_i, int end_j, tuple queue) impure inline {
     var i = 0;
     repeat (n) {
         var j = 0;
-        var row = empty_tuple();
         repeat (m) {
             var item = maze.at(i).at(j);
-            if maze.at(i).at(j) == s {
-                start_i = i;
-                start_j = j;
-                lmap_init = lmap_init.write_at(i, j, 0);
-
-            }
-            if maze.at(i).at(j) == e {
-                end_i = i;
-                end_j = j;
+            if (item == s) | (item == e) {
+                if (item == s) {
+                    start_i = i;
+                    start_j = j;
+                }
+                if item == e {
+                    end_i = i;
+                    end_j = j;
+                }
             }
             j = j + 1;
         }
@@ -235,6 +236,9 @@ tuple forward(int end_i, int end_j, tuple queue) impure inline {
     if (abs(start_i - end_i) < 2) & (abs(start_j - end_j) < 2) { ;; check for zero path
         return (0, 0, 1, maze);
     }
+
+    lmap_init = lmap_init.write_at(start_i, start_j, 0);
+    lmap_init = lmap_init.write_at(end_i, end_j, max_w);
 
     lmap = lmap_init;
 
@@ -250,15 +254,11 @@ tuple forward(int end_i, int end_j, tuple queue) impure inline {
     ;; Forward trace
     end = 0;
     do {
-        queue = forward(end_i, end_j, queue);
+        queue = forward(queue);
     } until (end == -1);
 
     ;; Back trace
-    var cur_i = end_i;
-    var cur_j = end_j;
-    lmap = lmap.write_at(end_i, end_j, max_w);
-
-    (cur_i, cur_j, int w) = back(end_i, end_j);
+    (int cur_i, int cur_j, int w) = back(end_i, end_j);
 
     var walls = w / wall_w;
     var prob = (w - walls * wall_w) / prob_w;
