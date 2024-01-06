@@ -152,7 +152,6 @@ tuple forward(tuple queue) impure inline {
     var q1 = queue.at(0);
 
     if tlen(q1) > 0 {
-;;         var row = queue.at(0);
         var batch = q1~tpop();
         queue~tset(0, q1);
         queue = step_forward(queue, batch);
@@ -228,9 +227,9 @@ tuple forward(tuple queue) impure inline {
                     end_j = j;
                 }
             }
-            j = j + 1;
+            j += 1;
         }
-        i = i + 1;
+        i += 1;
     }
 
     if (abs(start_i - end_i) < 2) & (abs(start_j - end_j) < 2) { ;; check for zero path
@@ -260,23 +259,16 @@ tuple forward(tuple queue) impure inline {
     ;; Back trace
     (int cur_i, int cur_j, int w) = back(end_i, end_j);
 
+    do {
+        var row = maze.at(cur_i);
+        row~tset(cur_j, p);
+        maze~tset(cur_i, row);
+        (cur_i, cur_j, int cur_w) = back(cur_i, cur_j);
+    } until cur_w == 0;
+
     var walls = w / wall_w;
     var prob = (w - walls * wall_w) / prob_w;
     var path = w - walls * wall_w - prob * prob_w + 1;
 
-    var row = maze.at(cur_i);
-    row~tset(cur_j, p);
-    maze~tset(cur_i, row);
-
-    repeat (1000) {
-        (cur_i, cur_j, int cur_w) = back(cur_i, cur_j);
-        if cur_w == 0 {
-            return (walls, prob, path, maze);
-        }
-        var row = maze.at(cur_i);
-        row~tset(cur_j, p);
-        maze~tset(cur_i, row);
-    };
-
-    return (-1, 0, 0, null());
+    return (walls, prob, path, maze);
 }
