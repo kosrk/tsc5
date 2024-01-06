@@ -28,7 +28,7 @@
   if (op == 0x9df10277) {
 
     var signature = in_msg~load_bits(512);
-    var c = in_msg~load_ref();
+    var c = in_msg.preload_ref();
     var cs = c.begin_parse();
     var (locked_for, new_seqno) = (cs~load_uint(32), cs.preload_uint(32));
 
