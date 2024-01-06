@@ -36,7 +36,7 @@
         while f {
             int end_version = cs~load_uint(32);
             if start_version == current_version { ;; migration is presented
-                var migration_code = cs.preload_maybe_ref();
+                var migration_code = cs~load_maybe_ref();
                 if ~ cell_null?(migration_code) { ;; need storage migration
                     set_c3(bless(migration_code.begin_parse()));
                     storage = migrate_one(storage); ;; migrate storage
