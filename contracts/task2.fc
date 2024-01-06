@@ -20,7 +20,7 @@
                         .store_uint(owner, 256)
                         .store_dict(dict)
                         .store_uint(0, 64)
-                        .store_uint(0, 16)
+                        .store_uint(0, 10)
                         .end_cell()
         );
         return ();
@@ -44,7 +44,7 @@
         in_msg_body~load_uint(64 + 11); ;; query_id and addr prefix
         var dict = ds~load_dict();
 
-        (int total_share, int count) = (ds~load_uint(64), ds~load_uint(16));
+        (int total_share, int count) = (ds~load_uint(64), ds~load_uint(10));
 
         (int user, int share) = (in_msg_body~load_uint(256), in_msg_body~load_uint(32));
 
@@ -63,7 +63,7 @@
                         .store_uint(owner, 256)
                         .store_dict(dict)
                         .store_uint(total_share, 64)
-                        .store_uint(count, 16)
+                        .store_uint(count, 10)
                         .end_cell()
         );
 
@@ -90,7 +90,7 @@
         var (old_share , res) = dict~udict_delete_get?(256, user);
         throw_unless(121, res);
 
-        (int total_share, int count) = (ds~load_uint(64), ds~load_uint(16));
+        (int total_share, int count) = (ds~load_uint(64), ds~load_uint(10));
         total_share -= old_share~load_uint(32);
         count -= 1;
 
@@ -100,7 +100,7 @@
                         .store_uint(owner, 256)
                         .store_dict(dict)
                         .store_uint(total_share, 64)
-                        .store_uint(count, 16)
+                        .store_uint(count, 10)
                         .end_cell()
         );
         return();
@@ -114,14 +114,16 @@
         var dict = ds~load_dict();
         throw_if(122, dict.dict_empty?());
 
-        (int total_share, int count) = (ds~load_uint(64), ds~load_uint(16));
+        (int total_share, int count) = (ds~load_uint(64), ds.preload_uint(10));
+
+        var prebuild_message = begin_cell()
+                .store_uint(33792, 6 + 11);
 
         int user = -1;
         repeat count {
             (user, slice cs, _) = dict.udict_get_next_mod(256, user);
-            int part = cs~load_uint(32) * msg_value / total_share;
-            send_raw_message(begin_cell()
-                    .store_uint(33792, 6 + 11)
+            int part = cs.preload_uint(32) * msg_value / total_share;
+            send_raw_message(prebuild_message
 ;;                     .store_uint(0x10, 6) ;; nobounce - int_msg_info$0 ihr_disabled:Bool bounce:Bool bounced:Bool src:MsgAddress -> 010000
 ;;                     .store_uint(1024, 11) ;; std addr 0 workchain
                     .store_uint(user, 256)
@@ -148,22 +150,32 @@
         cs~load_uint(4 + 11); ;; flags + addr std op + wc
         int sender_address = cs.preload_uint(256); ;; sender address
 
-        (int total_share, int count) = (ds~load_uint(64), ds~load_uint(16));
+        (int total_share, int count) = (ds~load_uint(64), ds.preload_uint(10));
+
+        var prebuild_message = begin_cell()
+                .store_uint(33792, 6 + 11)
+                .store_uint(sender_address, 256)
+                .store_uint(17199869184, 36)
+                .store_uint(1, 1 + 4 + 4 + 64 + 32 + 1 + 1)
+                ;
+
+        var prebuild_body = begin_cell()
+                .store_uint(0xF8A7EA50000000000000000, 32 + 64);
 
         int user = -1;
         repeat count {
             (user, slice cs, _) = dict.udict_get_next_mod(256, user);
-            int part = cs~load_uint(32) * amount / total_share;
-            send_raw_message(begin_cell()
-                    .store_uint(33792, 6 + 11)
+            int part = cs.preload_uint(32) * amount / total_share;
+            send_raw_message(prebuild_message
+;;                     .store_uint(33792, 6 + 11)
 ;;                     .store_uint(0x18, 6) ;; bounce - int_msg_info$0 ihr_disabled:Bool bounce:Bool bounced:Bool src:MsgAddress -> 010000
 ;;                     .store_uint(1024, 11) ;; std addr 0 workchain
-                    .store_uint(sender_address, 256)
-                    .store_uint(17199869184, 36) ;; .store_coins(20000000)
-                    .store_uint(1, 1 + 4 + 4 + 64 + 32 + 1 + 1)
-                    .store_ref(
-                            begin_cell()
-                            .store_uint(0xF8A7EA50000000000000000, 32 + 64) ;; op + queryId
+;;                     .store_uint(sender_address, 256)
+;;                     .store_uint(17199869184, 36) ;; .store_coins(20000000)
+;;                     .store_uint(1, 1 + 4 + 4 + 64 + 32 + 1 + 1)
+                    .store_ref(prebuild_body
+;;                             begin_cell()
+;;                             .store_uint(0xF8A7EA50000000000000000, 32 + 64) ;; op + queryId
                             .store_coins(part) ;; amount
                             .store_uint(1024, 11) ;; std addr 0 workchain
                             .store_uint(user, 256) ;; destination
@@ -198,7 +210,7 @@ int get_user_share(slice user_address) method_id {
     var cs = get_data().begin_parse();
     cs~skip_bits(267);
     var dict = cs.preload_dict();
-    user_address~skip_bits(11);
-    var (share, res) = dict.udict_get?(256, user_address~load_uint(256));
+    user_address~load_uint(11);
+    var (share, _) = dict.udict_get?(256, user_address~load_uint(256));
     return share.preload_uint(32);
 }
