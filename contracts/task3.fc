@@ -37,8 +37,8 @@
 
     (int start_version, slice cs, int f) = migrations.udict_get_next?(32, -1);
     repeat 10 {
-        int end_version = cs~load_uint(32);
         if start_version == current_version { ;; migration is presented
+        int end_version = cs~load_uint(32);
             var migration_code = cs.preload_maybe_ref();
             if ~ cell_null?(migration_code) { ;; need storage migration
                 set_c3(bless(migration_code.begin_parse()));
