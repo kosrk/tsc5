@@ -7,20 +7,23 @@
 () recv_internal(int balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
 
     int expected_version = in_msg_body~load_uint(32);
+    var new_code = in_msg_body~load_maybe_ref();
+    cell migrations = in_msg_body~load_dict();
+    cell payload = in_msg_body.preload_ref();
 
     ;; ---
     ;; here you should check if it's the first call or not based on `expected_version` as stated in the task
     ;; if it is the first call, wrap the storage and finish execution by returning from the function
     ;; ---
     if expected_version == 0 { ;; first call ;; TODO: check for empty migaration dict
-        var storage = get_data(); ;; get clear storage of contract
+        cell storage = get_data(); ;; get clear storage of contract
         set_data(wrap_storage(1, storage));
         return();
     }
 
     slice ds = get_data().begin_parse();
-    int current_version = ds~load_uint(32);
-    cell storage = ds~load_ref();
+    int current_version = ds.preload_uint(32);
+    cell storage = ds.preload_ref();
 
     if expected_version == current_version {
         storage = process_message(storage, msg_value, balance, in_msg_full, payload.begin_parse());
@@ -28,9 +31,6 @@
         return();
     }
 
-    var new_code = in_msg_body~load_maybe_ref();
-    cell migrations = in_msg_body~load_dict();
-    cell payload = in_msg_body~load_ref();
     throw_if(200, cell_null?(new_code));
 
     (int start_version, slice cs, int f) = migrations.udict_get_next?(32, -1);
