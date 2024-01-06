@@ -56,6 +56,16 @@ tuple push_to_end(tuple item, tuple in_tuple) asm
         " TUPLEVAR "                            ;; [it, tup[0]..tup[m]]
         ;
 
+;; tuple write_at1(tuple tup, int i, int j, int val) asm(tup i val j)
+;;                                                 ;; tup i val j
+;;         " OVER2 "                               ;; tup i val j tup i
+;;         " INDEXVAR "                            ;; tup i val j row
+;;         " ROTREV "                              ;; tup i row val j
+;;         " SETINDEXVAR "                         ;; tup i row_mod
+;;         " SWAP "                                ;; tup row_mod i
+;;         " SETINDEXVAR "                         ;; tup_mod
+;;         ;
+
 tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
     var row = in_tup.at(in_i);
     row~tset(in_j, val);
@@ -115,8 +125,8 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
 
     while (~ batch.is_null()) {
         var cur = batch~pop_back();
-        var cur_i = cur.at(0);
-        var cur_j = cur.at(1);
+        var cur_i = cur.first();
+        var cur_j = cur.second();
         var w = lmap.at(cur_i).at(cur_j) + step_w;
         check_for(cur_i, cur_j - 1, w);
         check_for(cur_i + 1, cur_j, w);
@@ -128,9 +138,9 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
         check_for(cur_i - 1, cur_j - 1, w);
     }
 
-    tuple dq = queue.at(0);
-    tuple pq = queue.at(1);
-    tuple wq = queue.at(2);
+    tuple dq = queue.first();
+    tuple pq = queue.second();
+    tuple wq = queue.third();
 
     if ~ d_queue.is_null() {
         dq = push_to_end(d_queue, dq);
@@ -149,7 +159,7 @@ tuple write_at(tuple in_tup, int in_i, int in_j, int val) inline {
 
 tuple forward(tuple queue) impure inline {
 
-    var q1 = queue.at(0);
+    var q1 = queue.first();
 
     if tlen(q1) > 0 {
         var batch = q1~tpop();
@@ -158,7 +168,7 @@ tuple forward(tuple queue) impure inline {
         return queue;
     }
 
-    var q2 = queue.at(1);
+    var q2 = queue.second();
     if tlen(q2) > 0 {
         var batch = q2~tpop();
         queue~tset(1, q2);
@@ -166,7 +176,7 @@ tuple forward(tuple queue) impure inline {
         return queue;
     }
 
-    var q3 = queue.at(2);
+    var q3 = queue.third();
     if tlen(q3) > 0 {
         var batch = q3~tpop();
         queue~tset(2, q3);
