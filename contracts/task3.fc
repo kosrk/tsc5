@@ -25,46 +25,38 @@
     int current_version = ds~load_uint(32);
     cell storage = ds~load_ref();
 
-    ;;     throw_if(400, expected_version < current_version); ;; TODO: check if need
-
-    if expected_version > current_version {
-        throw_if(200, cell_null?(new_code));
-        ;;         throw_if(200, slice_empty?(new_code.begin_parse()));
-        ;;         var old_code = get_c3();
-        (int start_version, slice cs, int f) = migrations.udict_get_next?(32, -1);
-        while f {
-            int end_version = cs~load_uint(32);
-            if start_version == current_version { ;; migration is presented
-                var migration_code = cs~load_maybe_ref();
-                if ~ cell_null?(migration_code) { ;; need storage migration
-                    set_c3(bless(migration_code.begin_parse()));
-                    storage = migrate_one(storage); ;; migrate storage
-                }
-                current_version = end_version;
-            }
-            if current_version == expected_version { ;; storage updated
-                set_code(new_code);
-                set_c3(bless(new_code.begin_parse()));
-                storage = process_message(storage, msg_value, balance, in_msg_full, payload.begin_parse());
-                ;;                 set_c3(old_code);
-                set_data(wrap_storage(expected_version,storage));
-                return();
-            }
-            (start_version, cs, f) = migrations.udict_get_next?(32, start_version);
-        };
-        throw(400); ;; can not find migration
+    if expected_version == current_version {
+        storage = process_message(storage, msg_value, balance, in_msg_full, payload.begin_parse());
+        set_data(wrap_storage(expected_version,storage));
+        return();
     }
 
-    storage = process_message(storage, msg_value, balance, in_msg_full, payload.begin_parse());
-    set_data(wrap_storage(expected_version,storage));
+    throw_if(200, cell_null?(new_code));
+
+    (int start_version, slice cs, int f) = migrations.udict_get_next?(32, -1);
+    while f {
+        int end_version = cs~load_uint(32);
+        if start_version == current_version { ;; migration is presented
+            var migration_code = cs~load_maybe_ref();
+            if ~ cell_null?(migration_code) { ;; need storage migration
+                set_c3(bless(migration_code.begin_parse()));
+                storage = migrate_one(storage); ;; migrate storage
+            }
+            current_version = end_version;
+        }
+        if current_version == expected_version { ;; storage updated
+            set_code(new_code);
+            set_c3(bless(new_code.begin_parse()));
+            storage = process_message(storage, msg_value, balance, in_msg_full, payload.begin_parse());
+            set_data(wrap_storage(expected_version,storage));
+            return();
+        }
+        (start_version, cs, f) = migrations.udict_get_next?(32, start_version);
+    };
+    throw(400); ;; can not find migration
 }
 
 cell get_storage() inline {
-    ;;     slice cs = get_data().begin_parse();
-
-    ;; Logic to extract the storage on which the version-specific process_message and get-methods operate
-    ;;     cell storage = cs~load_ref();
-
     return get_data().begin_parse().preload_ref();
 }
 
